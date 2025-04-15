@@ -171,7 +171,8 @@ def make_logger(config):
           exp, run, proj, config.logger.user, config.flat))
     elif output == 'wandb':
       name = '/'.join(logdir.split('/')[-4:])
-      outputs.append(elements.logger.WandBOutput(name))
+      outputs.append(elements.logger.WandBOutput(name="dreamerz",
+                                                 project="re-dreamerv3"))
     elif output == 'scope':
       outputs.append(elements.logger.ScopeOutput(elements.Path(logdir)))
     else:
