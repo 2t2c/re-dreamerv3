@@ -15,5 +15,11 @@ module load 2024
 module load 2023
 module load Anaconda3/2023.07-2
 
-cd $HOME/re-dreamerv3/
-conda env create -f environment.yml
+source activate re-dreamer
+
+srun python dreamerv3/main.py \
+    --logdir $HOME/logdir/dreamer/{timestamp} \
+    --configs atari100k \
+    --run.train_ratio 32 \
+    --jax.platform cpu \
+    --batch_size 1

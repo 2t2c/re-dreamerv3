@@ -15,4 +15,5 @@ module load 2024
 module load 2023
 module load Anaconda3/2023.07-2
 
-source activate assignment2
+cd $HOME/re-dreamerv3/
+conda env create -f environment.yaml
