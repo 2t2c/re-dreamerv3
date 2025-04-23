@@ -1,12 +1,19 @@
 import collections
 from functools import partial as bind
-
+from typing import Callable, Any
 import elements
 import embodied
 import numpy as np
+from embodied.core import base
 
-
-def train(make_agent, make_replay, make_env, make_stream, make_logger, args):
+def train(
+    make_agent: Callable[[], embodied.Agent],
+    make_replay: Callable[[], embodied.Replay],
+    make_env: Callable[[], embodied.Env],
+    make_stream: Callable[[], base.Stream],
+    make_logger: Callable[[], elements.Logger],
+    args: Any,
+):
     """
     Train a Dreamer agent on an environment.
     """

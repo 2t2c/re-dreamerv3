@@ -3,6 +3,7 @@
 python dreamerv3/main.py \
     --logdir $HOME/logdir/dreamer/{timestamp} \
     --configs atari100k \
+    size1m \
     --run.train_ratio 32 \
     --jax.platform cpu \
     --batch_size 1
