@@ -1,5 +1,7 @@
 defaults:
 
+  run_name: debug # wandb run name
+  project: local # wandb project name
   logdir: ~/logdir/{timestamp}
   replica: 0
   replicas: 1
@@ -81,6 +83,7 @@ defaults:
     expect_devices: 0
     enable_policy: True
     coordinator_address: ''
+    profiler: False # fix for local run
 
   agent:
     loss_scales: {rec: 1.0, rew: 1.0, con: 1.0, dyn: 1.0, rep: 0.1, policy: 1.0, value: 1.0, repval: 0.3}
@@ -156,7 +159,7 @@ minecraft:
   task: minecraft_diamond
 
 dmlab:
-  task: dmlab_explore_goal_locations_small
+  task: dmlab_language_execute_random_task
   run: {steps: 2.6e7, train_ratio: 32}
 
 atari:
@@ -164,11 +167,11 @@ atari:
   run: {steps: 5.1e7, train_ratio: 32}
 
 procgen:
-  task: procgen_coinrun
+  task: procgen_heist
   run: {steps: 1.1e8, train_ratio: 64}
 
 atari100k:
-  task: atari100k_pong
+  task: atari100k_private_eye
   run: {steps: 1.1e5, envs: 1, train_ratio: 256}
 
 crafter:

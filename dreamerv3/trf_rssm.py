@@ -5,14 +5,15 @@ import embodied.jax
 import embodied.jax.nets as nn
 import jax
 import jax.numpy as jnp
+import flax.linen as fl
 import ninjax as nj
 import numpy as np
 
 f32 = jnp.float32
 sg = jax.lax.stop_gradient
 
-# RSSM = Recurrent State Space Model
-class RSSM(nj.Module):
+# TransformerRSSM model
+class TransformerRSSM(fl.Module):
     # hyperparameters with defaults
     deter: int = 4096  # size of deterministic hidden state
     hidden: int = 2048  # hidden layer size for networks
@@ -23,71 +24,65 @@ class RSSM(nj.Module):
     unroll: bool = False  # whether to use scanning for unrolling time
     unimix: float = 0.01  # uniform mixing for discrete distributions
     outscale: float = 1.0  # output scale for logits
-    imglayers: int = 2  # layers in image decoder (prior)
-    obslayers: int = 1  # layers in observation encoder (posterior)
-    dynlayers: int = 1  # number of layers in dynamics model
-    absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
-    free_nats: float = 1.0  # threshold for KL regularization
+    layers: int = 3  # number of transformer layers
 
-    def __init__(self, act_space, **kw):
-        # ensure compatibility with BlockLinear
-        assert self.deter % self.blocks == 0
-        # action space description
-        self.act_space = act_space
-        # additional kwargs passed to submodules
-        self.kw = kw
+    # Space and action space
+    act_space: dict = None
+    kw: dict = None
 
-    @property
-    def entry_space(self):
-        # Shape of latent entries returned at each timestep
-        return dict(
-            deter=elements.Space(np.float32, self.deter),
-            stoch=elements.Space(np.float32, (self.stoch, self.classes)))
+    def setup(self):
+        # Define transformer layers for processing tokens, actions, and states
+        self.attn_layers = [
+            fl.MultiHeadDotProductAttention(
+                num_heads=8, dtype=jnp.float32
+            ) for _ in range(self.layers)
+        ]
+        self.ffn_layers = [
+            fl.Sequential([
+                fl.Dense(self.hidden),
+                jax.nn.gelu,
+                fl.Dense(self.deter)
+            ]) for _ in range(self.layers)
+        ]
+        self.norm_layers = [fl.LayerNorm() for _ in range(self.layers)]
 
     def initial(self, bsize):
-        # initial state (zeroed)
         carry = nn.cast(dict(
-            deter=jnp.zeros([bsize, self.deter], f32),
-            stoch=jnp.zeros([bsize, self.stoch, self.classes], f32)))
+            deter=jnp.zeros([bsize, self.deter], jnp.float32),
+            stoch=jnp.zeros([bsize, self.stoch, self.classes], jnp.float32)
+        ))
         return carry
-
-    def truncate(self, entries, carry=None):
-        # extract last timestep to serve as initial state for next episode
-        assert entries['deter'].ndim == 3, entries['deter'].shape
-        carry = jax.tree.map(lambda x: x[:, -1], entries)
-        return carry
-
-    def starts(self, entries, carry, nlast):
-        # prepare sequences starting from last n steps
-        B = len(jax.tree.leaves(carry)[0])
-        return jax.tree.map(
-            lambda x: x[:, -nlast:].reshape((B * nlast, *x.shape[2:])), entries)
 
     def observe(self, carry, tokens, action, reset, training, single=False):
-        # encodes observations (posterior) given inputs
+        # Encode the observation given tokens and actions
         carry, tokens, action = nn.cast((carry, tokens, action))
         if single:
             carry, (entry, feat) = self._observe(carry, tokens, action, reset, training)
             return carry, entry, feat
         else:
             unroll = jax.tree.leaves(tokens)[0].shape[1] if self.unroll else 1
-            carry, (entries, feat) = nj.scan(
+            carry, (entries, feat) = jax.lax.scan(
                 lambda carry, inputs: self._observe(carry, *inputs, training),
-                carry, (tokens, action, reset), unroll=unroll, axis=1)
+                carry, (tokens, action, reset), unroll=unroll, axis=1
+            )
             return carry, entries, feat
 
     def _observe(self, carry, tokens, action, reset, training):
-        # processes one step of observation encoding
+        # One-step observation processing
         deter, stoch, action = nn.mask((carry['deter'], carry['stoch'], action), ~reset)
         action = nn.DictConcat(self.act_space, 1)(action)
         action = nn.mask(action, ~reset)
         deter = self._core(deter, stoch, action)
+
+        # Apply transformer processing to tokens
         tokens = tokens.reshape((*deter.shape[:-1], -1))
-        x = tokens if self.absolute else jnp.concatenate([deter, tokens], -1)
-        for i in range(self.obslayers):
-            x = self.sub(f'obs{i}', nn.Linear, self.hidden, **self.kw)(x)
-            x = nn.act(self.act)(self.sub(f'obs{i}norm', nn.Norm, self.norm)(x))
+        x = jnp.concatenate([deter, tokens], -1)  # Concatenate deterministic state and tokens
+        for i in range(self.layers):
+            x = self.attn_layers[i](x, x, x)  # Apply attention layers
+            x = self.ffn_layers[i](x)  # Apply feed-forward layers
+            x = self.norm_layers[i](x)  # Apply layer normalization
+
         logit = self._logit('obslogit', x)
         stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
         carry = dict(deter=deter, stoch=stoch)
@@ -95,97 +90,45 @@ class RSSM(nj.Module):
         entry = dict(deter=deter, stoch=stoch)
         return carry, (entry, feat)
 
-    def imagine(self, carry, policy, length, training, single=False):
-        # predicts future latent states using learned dynamics and a policy
-        if single:
-            action = policy(sg(carry)) if callable(policy) else policy
-            actemb = nn.DictConcat(self.act_space, 1)(action)
-            deter = self._core(carry['deter'], carry['stoch'], actemb)
-            logit = self._prior(deter)
-            stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
-            carry = nn.cast(dict(deter=deter, stoch=stoch))
-            feat = nn.cast(dict(deter=deter, stoch=stoch, logit=logit))
-            return carry, (feat, action)
-        else:
-            unroll = length if self.unroll else 1
-            scan_fn = (
-                lambda c, _: self.imagine(c, policy, 1, training, single=True)
-                if callable(policy)
-                else lambda c, a: self.imagine(c, a, 1, training, single=True)
-            )
-            carry, (feat, action) = nj.scan(scan_fn, nn.cast(carry),
-                                            () if callable(policy) else nn.cast(policy),
-                                            length, unroll=unroll, axis=1)
-            return carry, feat, action
-
-    def loss(self, carry, tokens, acts, reset, training):
-        # computes KL divergence loss between posterior and prior
-        metrics = {}
-        carry, entries, feat = self.observe(carry, tokens, acts, reset, training)
-        # predicted prior from dynamics
-        prior = self._prior(feat['deter'])
-        # actual posterior from observation
-        post = feat['logit']
-        # stop-grad posterior
-        dyn = self._dist(sg(post)).kl(self._dist(prior))
-        # stop-grad prior
-        rep = self._dist(post).kl(self._dist(sg(prior)))
-        if self.free_nats:
-            dyn = jnp.maximum(dyn, self.free_nats)
-            rep = jnp.maximum(rep, self.free_nats)
-        losses = {'dyn': dyn, 'rep': rep}
-        metrics['dyn_ent'] = self._dist(prior).entropy().mean()
-        metrics['rep_ent'] = self._dist(post).entropy().mean()
-        return carry, entries, losses, feat, metrics
-
     def _core(self, deter, stoch, action):
-        # main recurrent dynamics function with block-wise processing and GRU gating
+        # Main recurrent dynamics function using transformer and MLP
         stoch = stoch.reshape((stoch.shape[0], -1))
-        action /= sg(jnp.maximum(1, jnp.abs(action)))
-        g = self.blocks
-        flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
-        group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
+        action /= nn.sg(jnp.maximum(1, jnp.abs(action)))
+
+        # Process inputs (deterministic state, stochastic variables, action)
         x0 = self.sub('dynin0', nn.Linear, self.hidden, **self.kw)(deter)
         x0 = nn.act(self.act)(self.sub('dynin0norm', nn.Norm, self.norm)(x0))
         x1 = self.sub('dynin1', nn.Linear, self.hidden, **self.kw)(stoch)
         x1 = nn.act(self.act)(self.sub('dynin1norm', nn.Norm, self.norm)(x1))
         x2 = self.sub('dynin2', nn.Linear, self.hidden, **self.kw)(action)
         x2 = nn.act(self.act)(self.sub('dynin2norm', nn.Norm, self.norm)(x2))
-        x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
-        x = group2flat(jnp.concatenate([flat2group(deter), x], -1))
-        for i in range(self.dynlayers):
-            x = self.sub(f'dynhid{i}', nn.BlockLinear, self.deter, g, **self.kw)(x)
-            x = nn.act(self.act)(self.sub(f'dynhid{i}norm', nn.Norm, self.norm)(x))
-        x = self.sub('dyngru', nn.BlockLinear, 3 * self.deter, g, **self.kw)(x)
-        reset, cand, update = [group2flat(x) for x in jnp.split(flat2group(x), 3, -1)]
-        reset = jax.nn.sigmoid(reset)
-        cand = jnp.tanh(reset * cand)
-        update = jax.nn.sigmoid(update - 1)
-        deter = update * cand + (1 - update) * deter
+        x = jnp.concatenate([x0, x1, x2], -1)
+
+        # Apply the transformer layers to the concatenated state
+        for i in range(self.layers):
+            x = self.attn_layers[i](x, x, x)  # Apply attention layers
+            x = self.ffn_layers[i](x)  # Apply feed-forward layers
+            x = self.norm_layers[i](x)  # Apply layer normalization
+
+        # Output computation
+        x = self.sub('dyngru', nn.Linear, self.deter, **self.kw)(x)
+        deter = jax.nn.sigmoid(x)
         return deter
 
-    def _prior(self, feat):
-        # computes prior distribution logits
-        x = feat
-        for i in range(self.imglayers):
-            x = self.sub(f'prior{i}', nn.Linear, self.hidden, **self.kw)(x)
-            x = nn.act(self.act)(self.sub(f'prior{i}norm', nn.Norm, self.norm)(x))
-        return self._logit('priorlogit', x)
-
     def _logit(self, name, x):
-        # converts feature vector into logits over stochastic variables
+        # Converts the final feature vector into logits
         kw = dict(**self.kw, outscale=self.outscale)
         x = self.sub(name, nn.Linear, self.stoch * self.classes, **kw)(x)
         return x.reshape(x.shape[:-1] + (self.stoch, self.classes))
 
     def _dist(self, logits):
-        # returns a categorical distribution over logits with uniform mixing
+        # Returns a categorical distribution over the logits
         out = embodied.jax.outs.OneHot(logits, self.unimix)
         out = embodied.jax.outs.Agg(out, 1, jnp.sum)
         return out
 
 
-class Encoder(nj.Module):
+class TransformerEncoder(nj.Module):
     units: int = 1024
     norm: str = 'rms'
     act: str = 'gelu'
@@ -196,6 +139,7 @@ class Encoder(nj.Module):
     symlog: bool = True
     outer: bool = False
     strided: bool = False
+    attention_heads: int = 8
 
     def __init__(self, obs_space, **kw):
         # check that all input observations are at most 3d
@@ -207,6 +151,8 @@ class Encoder(nj.Module):
         # define number of channels per cnn block
         self.depths = tuple(self.depth * mult for mult in self.mults)
         self.kw = kw
+        # attention heads
+        self.attn_layer = fl.MultiHeadAttention(self.attention_heads, self.units)
 
     @property
     def entry_space(self):
@@ -237,6 +183,9 @@ class Encoder(nj.Module):
             for i in range(self.layers):
                 x = self.sub(f'mlp{i}', nn.Linear, self.units, **self.kw)(x)
                 x = nn.act(self.act)(self.sub(f'mlp{i}norm', nn.Norm, self.norm)(x))
+
+            # adding multi-head attention after MLP layers
+            x = self.attn_layer(x, x, x)
             outs.append(x)
 
         if self.imgkeys:
@@ -261,6 +210,10 @@ class Encoder(nj.Module):
                 x = nn.act(self.act)(self.sub(f'cnn{i}norm', nn.Norm, self.norm)(x))
             assert 3 <= x.shape[-3] <= 16, x.shape
             assert 3 <= x.shape[-2] <= 16, x.shape
+
+            # adding multi-head attention after MLP layers
+            x = self.attn_layer(x, x, x)
+
             x = x.reshape((x.shape[0], -1))
             outs.append(x)
 
@@ -272,7 +225,7 @@ class Encoder(nj.Module):
         return carry, entries, tokens
 
 
-class Decoder(nj.Module):
+class TransformerDecoder(nj.Module):
     units: int = 1024
     norm: str = 'rms'
     act: str = 'gelu'
@@ -285,6 +238,7 @@ class Decoder(nj.Module):
     bspace: int = 8
     outer: bool = False
     strided: bool = False
+    attention_heads: int = 8
 
     def __init__(self, obs_space, **kw):
         # check that all input observations are at most 3d
@@ -300,6 +254,8 @@ class Decoder(nj.Module):
         # get image resolution from the first image key
         self.imgres = self.imgkeys and obs_space[self.imgkeys[0]].shape[:-1]
         self.kw = kw
+        # attention heads
+        self.attn_layer = nn.MultiHeadAttention(self.attention_heads, self.units)
 
     @property
     def entry_space(self):
@@ -321,13 +277,24 @@ class Decoder(nj.Module):
         recons = {}
         bshape = reset.shape
 
-        # prepare feature input by flattening and concatenating
         inp = [nn.cast(feat[k]) for k in ('stoch', 'deter')]
         inp = [x.reshape((math.prod(bshape), -1)) for x in inp]
         inp = jnp.concatenate(inp, -1)
 
+        # optional: cross-attention between 'deter' and 'stoch'
+        q = feat['deter'].reshape((math.prod(bshape), 1, -1))
+        k = feat['stoch'].reshape((math.prod(bshape), 1, -1))
+        v = k
+        q = self.sub('attn_norm_q', nn.Norm, self.norm)(q)
+        k = self.sub('attn_norm_k', nn.Norm, self.norm)(k)
+        v = self.sub('attn_norm_v', nn.Norm, self.norm)(v)
+        attn_out = self.sub('cross_attn', fl.MultiHeadAttention,
+                            self.attention_heads, self.units)(q, k, v)
+        attn_out = attn_out.squeeze(axis=1)
+        # residual connection
+        inp = inp + attn_out
+
         if self.veckeys:
-            # process vector targets through mlp and map to prediction heads
             spaces = {k: self.obs_space[k] for k in self.veckeys}
             o1, o2 = 'categorical', ('symlog_mse' if self.symlog else 'mse')
             outputs = {k: o1 if v.discrete else o2 for k, v in spaces.items()}
@@ -339,7 +306,6 @@ class Decoder(nj.Module):
             recons.update(outs)
 
         if self.imgkeys:
-            # compute shape of the spatial feature map before upsampling
             factor = 2 ** (len(self.depths) - int(bool(self.outer)))
             minres = [int(x // factor) for x in self.imgres]
             assert 3 <= minres[0] <= 16, minres
@@ -347,26 +313,21 @@ class Decoder(nj.Module):
             shape = (*minres, self.depths[-1])
 
             if self.bspace:
-                # use structured projection to spatial feature map
                 u, g = math.prod(shape), self.bspace
                 x0, x1 = nn.cast((feat['deter'], feat['stoch']))
                 x1 = x1.reshape((*x1.shape[:-2], -1))
                 x0 = x0.reshape((-1, x0.shape[-1]))
                 x1 = x1.reshape((-1, x1.shape[-1]))
                 x0 = self.sub('sp0', nn.BlockLinear, u, g, **self.kw)(x0)
-                x0 = einops.rearrange(
-                    x0, '... (g h w c) -> ... h w (g c)',
-                    h=minres[0], w=minres[1], g=g)
+                x0 = einops.rearrange(x0, '... (g h w c) -> ... h w (g c)', h=minres[0], w=minres[1], g=g)
                 x1 = self.sub('sp1', nn.Linear, 2 * self.units, **self.kw)(x1)
                 x1 = nn.act(self.act)(self.sub('sp1norm', nn.Norm, self.norm)(x1))
                 x1 = self.sub('sp2', nn.Linear, shape, **self.kw)(x1)
                 x = nn.act(self.act)(self.sub('spnorm', nn.Norm, self.norm)(x0 + x1))
             else:
-                # fallback to direct linear projection
-                x = self.sub('space', nn.Linear, shape, **kw)(inp)
+                x = self.sub('space', nn.Linear, shape, **self.kw)(inp)
                 x = nn.act(self.act)(self.sub('spacenorm', nn.Norm, self.norm)(x))
 
-            # upsample spatial features using convtranspose or repetition
             for i, depth in reversed(list(enumerate(self.depths[:-1]))):
                 if self.strided:
                     kw = dict(**self.kw, transp=True)
@@ -376,7 +337,6 @@ class Decoder(nj.Module):
                     x = self.sub(f'conv{i}', nn.Conv2D, depth, K, **self.kw)(x)
                 x = nn.act(self.act)(self.sub(f'conv{i}norm', nn.Norm, self.norm)(x))
 
-            # apply final output conv to generate pixel predictions
             if self.outer:
                 kw = dict(**self.kw, outscale=self.outscale)
                 x = self.sub('imgout', nn.Conv2D, self.imgdep, K, **kw)(x)
@@ -390,9 +350,7 @@ class Decoder(nj.Module):
             x = jax.nn.sigmoid(x)
             x = x.reshape((*bshape, *x.shape[1:]))
 
-            # split final prediction into separate image keys
-            split = np.cumsum(
-                [self.obs_space[k].shape[-1] for k in self.imgkeys][:-1])
+            split = np.cumsum([self.obs_space[k].shape[-1] for k in self.imgkeys][:-1])
             for k, out in zip(self.imgkeys, jnp.split(x, split, -1)):
                 out = embodied.jax.outs.MSE(out)
                 out = embodied.jax.outs.Agg(out, 3, jnp.sum)
