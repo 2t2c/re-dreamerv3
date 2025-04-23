@@ -12,8 +12,9 @@ import numpy as np
 f32 = jnp.float32
 sg = jax.lax.stop_gradient
 
+
 # TransformerRSSM model
-class TransformerRSSM(fl.Module):
+class RSSM(fl.Module):
     # hyperparameters with defaults
     deter: int = 4096  # size of deterministic hidden state
     hidden: int = 2048  # hidden layer size for networks
@@ -128,7 +129,7 @@ class TransformerRSSM(fl.Module):
         return out
 
 
-class TransformerEncoder(nj.Module):
+class Encoder(nj.Module):
     units: int = 1024
     norm: str = 'rms'
     act: str = 'gelu'
@@ -151,8 +152,6 @@ class TransformerEncoder(nj.Module):
         # define number of channels per cnn block
         self.depths = tuple(self.depth * mult for mult in self.mults)
         self.kw = kw
-        # attention heads
-        self.attn_layer = fl.MultiHeadAttention(self.attention_heads, self.units)
 
     @property
     def entry_space(self):
@@ -185,7 +184,9 @@ class TransformerEncoder(nj.Module):
                 x = nn.act(self.act)(self.sub(f'mlp{i}norm', nn.Norm, self.norm)(x))
 
             # adding multi-head attention after MLP layers
-            x = self.attn_layer(x, x, x)
+            attention_module = self.sub('attn_vec', nn.Attention, heads=8, kv_heads=0, dropout=0.1)
+            x = attention_module(x, training=training)
+            outs.append(x)
             outs.append(x)
 
         if self.imgkeys:
@@ -211,10 +212,11 @@ class TransformerEncoder(nj.Module):
             assert 3 <= x.shape[-3] <= 16, x.shape
             assert 3 <= x.shape[-2] <= 16, x.shape
 
-            # adding multi-head attention after MLP layers
-            x = self.attn_layer(x, x, x)
-
-            x = x.reshape((x.shape[0], -1))
+            # adding multi-head attention after CNN layers
+            # flatten spatial dimensions (H, W) into T
+            x = x.reshape((x.shape[0], -1, x.shape[-1]))
+            attention_module = self.sub('attn_img', nn.Attention, heads=8, kv_heads=0, dropout=0.1)
+            x = attention_module(x, training=training)
             outs.append(x)
 
         # concatenate vector and image outputs
@@ -225,7 +227,7 @@ class TransformerEncoder(nj.Module):
         return carry, entries, tokens
 
 
-class TransformerDecoder(nj.Module):
+class Decoder(nj.Module):
     units: int = 1024
     norm: str = 'rms'
     act: str = 'gelu'
@@ -277,24 +279,13 @@ class TransformerDecoder(nj.Module):
         recons = {}
         bshape = reset.shape
 
+        # prepare feature input by flattening and concatenating
         inp = [nn.cast(feat[k]) for k in ('stoch', 'deter')]
         inp = [x.reshape((math.prod(bshape), -1)) for x in inp]
         inp = jnp.concatenate(inp, -1)
 
-        # optional: cross-attention between 'deter' and 'stoch'
-        q = feat['deter'].reshape((math.prod(bshape), 1, -1))
-        k = feat['stoch'].reshape((math.prod(bshape), 1, -1))
-        v = k
-        q = self.sub('attn_norm_q', nn.Norm, self.norm)(q)
-        k = self.sub('attn_norm_k', nn.Norm, self.norm)(k)
-        v = self.sub('attn_norm_v', nn.Norm, self.norm)(v)
-        attn_out = self.sub('cross_attn', fl.MultiHeadAttention,
-                            self.attention_heads, self.units)(q, k, v)
-        attn_out = attn_out.squeeze(axis=1)
-        # residual connection
-        inp = inp + attn_out
-
         if self.veckeys:
+            # process vector targets through mlp and map to prediction heads
             spaces = {k: self.obs_space[k] for k in self.veckeys}
             o1, o2 = 'categorical', ('symlog_mse' if self.symlog else 'mse')
             outputs = {k: o1 if v.discrete else o2 for k, v in spaces.items()}
@@ -306,6 +297,7 @@ class TransformerDecoder(nj.Module):
             recons.update(outs)
 
         if self.imgkeys:
+            # compute shape of the spatial feature map before upsampling
             factor = 2 ** (len(self.depths) - int(bool(self.outer)))
             minres = [int(x // factor) for x in self.imgres]
             assert 3 <= minres[0] <= 16, minres
@@ -313,6 +305,7 @@ class TransformerDecoder(nj.Module):
             shape = (*minres, self.depths[-1])
 
             if self.bspace:
+                # use structured projection to spatial feature map
                 u, g = math.prod(shape), self.bspace
                 x0, x1 = nn.cast((feat['deter'], feat['stoch']))
                 x1 = x1.reshape((*x1.shape[:-2], -1))
@@ -324,10 +317,20 @@ class TransformerDecoder(nj.Module):
                 x1 = nn.act(self.act)(self.sub('sp1norm', nn.Norm, self.norm)(x1))
                 x1 = self.sub('sp2', nn.Linear, shape, **self.kw)(x1)
                 x = nn.act(self.act)(self.sub('spnorm', nn.Norm, self.norm)(x0 + x1))
+                # apply attention over spatial features [B, H, W, C] -> [B, H*W, C]
+                B, H, W, C = x.shape
+                x_flat = x.reshape((B, H * W, C))
+                # apply attention
+                attn = self.sub('dec_attn', nn.Attention, heads=4, dropout=0.1)(x_flat, training=training)
+                # residual connection and reshape back
+                x = x_flat + attn
+                x = x.reshape((B, H, W, C))
             else:
+                # fallback to direct linear projection
                 x = self.sub('space', nn.Linear, shape, **self.kw)(inp)
                 x = nn.act(self.act)(self.sub('spacenorm', nn.Norm, self.norm)(x))
 
+            # upsample spatial features using convtranspose or repetition
             for i, depth in reversed(list(enumerate(self.depths[:-1]))):
                 if self.strided:
                     kw = dict(**self.kw, transp=True)
@@ -337,6 +340,7 @@ class TransformerDecoder(nj.Module):
                     x = self.sub(f'conv{i}', nn.Conv2D, depth, K, **self.kw)(x)
                 x = nn.act(self.act)(self.sub(f'conv{i}norm', nn.Norm, self.norm)(x))
 
+            # apply final output conv to generate pixel predictions
             if self.outer:
                 kw = dict(**self.kw, outscale=self.outscale)
                 x = self.sub('imgout', nn.Conv2D, self.imgdep, K, **kw)(x)
@@ -350,7 +354,9 @@ class TransformerDecoder(nj.Module):
             x = jax.nn.sigmoid(x)
             x = x.reshape((*bshape, *x.shape[1:]))
 
-            split = np.cumsum([self.obs_space[k].shape[-1] for k in self.imgkeys][:-1])
+            # split final prediction into separate image keys
+            split = np.cumsum(
+                [self.obs_space[k].shape[-1] for k in self.imgkeys][:-1])
             for k, out in zip(self.imgkeys, jnp.split(x, split, -1)):
                 out = embodied.jax.outs.MSE(out)
                 out = embodied.jax.outs.Agg(out, 3, jnp.sum)

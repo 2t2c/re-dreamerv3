@@ -108,14 +108,17 @@ class RSSM(nj.Module):
             return carry, (feat, action)
         else:
             unroll = length if self.unroll else 1
-            scan_fn = (
-                lambda c, _: self.imagine(c, policy, 1, training, single=True)
-                if callable(policy)
-                else lambda c, a: self.imagine(c, a, 1, training, single=True)
-            )
-            carry, (feat, action) = nj.scan(scan_fn, nn.cast(carry),
-                                            () if callable(policy) else nn.cast(policy),
-                                            length, unroll=unroll, axis=1)
+            if callable(policy):
+                carry, (feat, action) = nj.scan(
+                    lambda c, _: self.imagine(c, policy, 1, training, single=True),
+                    nn.cast(carry), (), length, unroll=unroll, axis=1)
+            else:
+                carry, (feat, action) = nj.scan(
+                    lambda c, a: self.imagine(c, a, 1, training, single=True),
+                    nn.cast(carry), nn.cast(policy), length, unroll=unroll, axis=1)
+            # We can also return all carry entries but it might be expensive.
+            # entries = dict(deter=feat['deter'], stoch=feat['stoch'])
+            # return carry, entries, feat, action
             return carry, feat, action
 
     def loss(self, carry, tokens, acts, reset, training):
@@ -363,7 +366,7 @@ class Decoder(nj.Module):
                 x = nn.act(self.act)(self.sub('spnorm', nn.Norm, self.norm)(x0 + x1))
             else:
                 # fallback to direct linear projection
-                x = self.sub('space', nn.Linear, shape, **kw)(inp)
+                x = self.sub('space', nn.Linear, shape, **self.kw)(inp)
                 x = nn.act(self.act)(self.sub('spacenorm', nn.Norm, self.norm)(x))
 
             # upsample spatial features using convtranspose or repetition
