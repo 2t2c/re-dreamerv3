@@ -2,20 +2,22 @@ import importlib
 import os
 import pathlib
 import sys
-from functools import partial as bind
+from functools import partial as bind  # alias partial function as bind
 
+# set up module path resolution
 folder = pathlib.Path(__file__).parent
-sys.path.insert(0, str(folder.parent))
-sys.path.insert(1, str(folder.parent.parent))
+sys.path.insert(0, str(folder.parent))  # add parent dir to path
+sys.path.insert(1, str(folder.parent.parent))  # add grandparent dir to path
 __package__ = folder.name
 
+# import required libraries
 import elements
 import embodied
 import numpy as np
 import portal
 import ruamel.yaml as yaml
 
-# environment modules
+# define supported environment modules and their entry points
 ENVIRONMENTS = {
     'dummy': 'embodied.envs.dummy:Dummy',
     'gym': 'embodied.envs.from_gym:FromGym',
@@ -36,9 +38,10 @@ ENVIRONMENTS = {
 
 def main(argv=None):
     from .agent import Agent
+    # print agent banner lines
     [elements.print(line) for line in Agent.banner]
 
-    # load setup config
+    # load configuration from yaml file
     configs = elements.Path(folder / 'configs.yaml').read()
     configs = yaml.YAML(typ='safe').load(configs)
     parsed, other = elements.Flags(configs=['defaults']).parse_known(argv)
@@ -49,11 +52,12 @@ def main(argv=None):
     config = config.update(logdir=(
         config.logdir.format(timestamp=elements.timestamp())))
 
+    # set replica index from job environment variable
     if 'JOB_COMPLETION_INDEX' in os.environ:
         config = config.update(replica=int(os.environ['JOB_COMPLETION_INDEX']))
     print('Replica:', config.replica, '/', config.replicas)
 
-    # setup log directory
+    # initialize log directory and save config
     logdir = elements.Path(config.logdir)
     print('Logdir:', logdir)
     print('Run script:', config.script)
@@ -61,6 +65,7 @@ def main(argv=None):
         logdir.mkdir()
         config.save(logdir / 'config.yaml')
 
+    # initialize timers and portal interface
     def init():
         elements.timer.global_timer.enabled = config.logger.timer
 
@@ -72,6 +77,7 @@ def main(argv=None):
         ipv6=config.ipv6,
     )
 
+    # prepare arguments for run script
     args = elements.Config(
         **config.run,
         replica=config.replica,
@@ -85,7 +91,7 @@ def main(argv=None):
         replay_context=config.replay_context,
     )
 
-    # bind is just a partial function to create a new function with fewer args
+    # dispatch to the appropriate script entry point
     if config.script == 'train':
         embodied.run.train(
             bind(make_agent, config),
@@ -146,6 +152,9 @@ def main(argv=None):
 
 
 def make_agent(config):
+    """
+    Create agent instance using configuration
+    """
     from .agent import Agent
     env = make_env(config, 0)
     notlog = lambda k: not k.startswith('log/')
@@ -171,6 +180,9 @@ def make_agent(config):
 
 
 def make_logger(config):
+    """
+    Construct logger with selected outputs
+    """
     step = elements.Counter()
     logdir = config.logdir
     multiplier = config.env.get(config.task.split('_')[0], {}).get('repeat', 1)
@@ -203,6 +215,9 @@ def make_logger(config):
 
 
 def make_replay(config, folder, mode='train'):
+    """
+    Initialize replay buffer with config-based parameters
+    """
     batlen = config.batch_length if mode == 'train' else config.report_length
     consec = config.consec_train if mode == 'train' else config.consec_report
     capacity = config.replay.size if mode == 'train' else config.replay.size / 10
@@ -218,7 +233,7 @@ def make_replay(config, folder, mode='train'):
 
     if config.replay.fracs.uniform < 1 and mode == 'train':
         assert config.jax.compute_dtype in ('bfloat16', 'float32'), (
-            'Gradient scaling for low-precision training can produce invalid loss '
+            'gradient scaling for low-precision training can produce invalid loss '
             'outputs that are incompatible with prioritized replay.')
         recency = 1.0 / np.arange(1, capacity + 1) ** config.replay.recexp
         selectors = embodied.replay.selectors
@@ -232,6 +247,9 @@ def make_replay(config, folder, mode='train'):
 
 
 def make_env(config, index, **overrides):
+    """
+    Construct and wrap the environment with common wrappers
+    """
     suite, task = config.task.split('_', 1)
     if suite == 'memmaze':
         from embodied.envs import from_gym
@@ -254,6 +272,9 @@ def make_env(config, index, **overrides):
 
 
 def wrap_env(env, config):
+    """
+    Apply common wrappers for dtype unification, action clipping etc.
+    """
     for name, space in env.act_space.items():
         if not space.discrete:
             env = embodied.wrappers.NormalizeAction(env, name)
@@ -266,6 +287,9 @@ def wrap_env(env, config):
 
 
 def make_stream(config, replay, mode):
+    """
+    Construct data stream with consecutive sampling logic
+    """
     fn = bind(replay.sample, config.batch_size, mode)
     stream = embodied.streams.Stateless(fn)
     stream = embodied.streams.Consec(
@@ -279,5 +303,6 @@ def make_stream(config, replay, mode):
     return stream
 
 
+# run main entry
 if __name__ == '__main__':
     main()
