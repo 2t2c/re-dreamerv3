@@ -11,6 +11,7 @@ import numpy as np
 import optax
 
 from . import rssm
+from . import trf_rssm
 
 f32 = jnp.float32
 i32 = jnp.int32

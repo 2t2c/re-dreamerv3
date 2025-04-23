@@ -37,3 +37,4 @@ dependencies:
       - tqdm
       - wandb
       - moviepy==2.1.2
+      - flax==0.10.6
