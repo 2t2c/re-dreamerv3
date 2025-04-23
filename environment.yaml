@@ -35,3 +35,5 @@ dependencies:
       - portal>=3.5.0
       - scope>=0.4.4
       - tqdm
+      - wandb
+      - moviepy==2.1.2
