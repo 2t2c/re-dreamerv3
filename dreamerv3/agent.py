@@ -38,6 +38,8 @@ class Agent(embodied.jax.Agent):
         exclude = ('is_first', 'is_last', 'is_terminal', 'reward')
         enc_space = {k: v for k, v in obs_space.items() if k not in exclude}
         dec_space = {k: v for k, v in obs_space.items() if k not in exclude}
+        # enc_space, dec_space: env. observation space
+        # act_space: env. action space
         self.enc = {
             'simple': rssm.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
