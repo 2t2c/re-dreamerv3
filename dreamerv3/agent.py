@@ -11,7 +11,7 @@ import numpy as np
 import optax
 
 from . import rssm
-from . import trf_rssm
+from . import rssmv2
 
 f32 = jnp.float32
 i32 = jnp.int32
@@ -41,13 +41,13 @@ class Agent(embodied.jax.Agent):
         # enc_space, dec_space: env. observation space
         # act_space: env. action space
         self.enc = {
-            'simple': rssm.Encoder,
+            'simple': rssmv2.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
         self.dyn = {
             'rssm': rssm.RSSM,
         }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
         self.dec = {
-            'simple': rssm.Decoder,
+            'simple': rssmv2.Decoder,
         }[config.dec.typ](dec_space, **config.dec[config.dec.typ], name='dec')
 
         self.feat2tensor = lambda x: jnp.concatenate([

@@ -149,7 +149,7 @@ class Encoder(nj.Module):
         # separate observation keys into vector and image inputs
         self.veckeys = [k for k, s in obs_space.items() if len(s.shape) <= 2]
         self.imgkeys = [k for k, s in obs_space.items() if len(s.shape) == 3]
-        # define number of channels per cnn block
+        # define number of cnn layers
         self.depths = tuple(self.depth * mult for mult in self.mults)
         self.kw = kw
 
@@ -184,9 +184,10 @@ class Encoder(nj.Module):
                 x = nn.act(self.act)(self.sub(f'mlp{i}norm', nn.Norm, self.norm)(x))
 
             # adding multi-head attention after MLP layers
-            attention_module = self.sub('attn_vec', nn.Attention, heads=8, kv_heads=0, dropout=0.1)
+            attention_module = self.sub('attn_vec', nn.Attention,
+                                        heads=self.attention_heads,
+                                        kv_heads=0, dropout=0.25)
             x = attention_module(x, training=training)
-            outs.append(x)
             outs.append(x)
 
         if self.imgkeys:
@@ -196,6 +197,7 @@ class Encoder(nj.Module):
             assert all(x.dtype == jnp.uint8 for x in imgs)
             x = nn.cast(jnp.concatenate(imgs, -1), force=True) / 255 - 0.5
             x = x.reshape((-1, *x.shape[bdims:]))
+            # no. of CNN layers
             for i, depth in enumerate(self.depths):
                 if self.outer and i == 0:
                     # use non-strided conv on first layer if outer is set
@@ -208,14 +210,20 @@ class Encoder(nj.Module):
                     x = self.sub(f'cnn{i}', nn.Conv2D, depth, K, **self.kw)(x)
                     B, H, W, C = x.shape
                     x = x.reshape((B, H // 2, 2, W // 2, 2, C)).max((2, 4))
+
+                # convnext block
+                x = self.sub(f'convnext{i}', nn.ConvNeXtBlock, dim=depth)(x)
                 x = nn.act(self.act)(self.sub(f'cnn{i}norm', nn.Norm, self.norm)(x))
+
             assert 3 <= x.shape[-3] <= 16, x.shape
             assert 3 <= x.shape[-2] <= 16, x.shape
 
             # adding multi-head attention after CNN layers
             # flatten spatial dimensions (H, W) into T
             x = x.reshape((x.shape[0], -1, x.shape[-1]))
-            attention_module = self.sub('attn_img', nn.Attention, heads=8, kv_heads=0, dropout=0.1)
+            attention_module = self.sub('attn_img', nn.Attention,
+                                        heads=self.attention_heads,
+                                        kv_heads=0, dropout=0.25)
             x = attention_module(x, training=training)
             outs.append(x)
 
@@ -256,8 +264,6 @@ class Decoder(nj.Module):
         # get image resolution from the first image key
         self.imgres = self.imgkeys and obs_space[self.imgkeys[0]].shape[:-1]
         self.kw = kw
-        # attention heads
-        self.attn_layer = nn.MultiHeadAttention(self.attention_heads, self.units)
 
     @property
     def entry_space(self):
@@ -317,18 +323,21 @@ class Decoder(nj.Module):
                 x1 = nn.act(self.act)(self.sub('sp1norm', nn.Norm, self.norm)(x1))
                 x1 = self.sub('sp2', nn.Linear, shape, **self.kw)(x1)
                 x = nn.act(self.act)(self.sub('spnorm', nn.Norm, self.norm)(x0 + x1))
-                # apply attention over spatial features [B, H, W, C] -> [B, H*W, C]
-                B, H, W, C = x.shape
-                x_flat = x.reshape((B, H * W, C))
-                # apply attention
-                attn = self.sub('dec_attn', nn.Attention, heads=4, dropout=0.1)(x_flat, training=training)
-                # residual connection and reshape back
-                x = x_flat + attn
-                x = x.reshape((B, H, W, C))
             else:
                 # fallback to direct linear projection
                 x = self.sub('space', nn.Linear, shape, **self.kw)(inp)
                 x = nn.act(self.act)(self.sub('spacenorm', nn.Norm, self.norm)(x))
+
+            # apply attention over spatial features [B, H, W, C] -> [B, H*W, C]
+            B, H, W, C = x.shape
+            x_flat = x.reshape((B, H * W, C))
+            # apply attention
+            attn = self.sub('attn_img', nn.Attention,
+                            heads=self.attention_heads,
+                            dropout=0.25)(x_flat, training=training)
+            # residual connection and reshape back
+            x = x_flat + attn
+            x = x.reshape((B, H, W, C))
 
             # upsample spatial features using convtranspose or repetition
             for i, depth in reversed(list(enumerate(self.depths[:-1]))):
@@ -338,6 +347,9 @@ class Decoder(nj.Module):
                 else:
                     x = x.repeat(2, -2).repeat(2, -3)
                     x = self.sub(f'conv{i}', nn.Conv2D, depth, K, **self.kw)(x)
+
+                # convnext block
+                x = self.sub(f'convnext{i}', nn.ConvNeXtBlock, dim=depth)(x)
                 x = nn.act(self.act)(self.sub(f'conv{i}norm', nn.Norm, self.norm)(x))
 
             # apply final output conv to generate pixel predictions
