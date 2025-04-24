@@ -5,7 +5,6 @@ import embodied.jax
 import embodied.jax.nets as nn
 import jax
 import jax.numpy as jnp
-import flax.linen as fl
 import ninjax as nj
 import numpy as np
 
@@ -13,8 +12,8 @@ f32 = jnp.float32
 sg = jax.lax.stop_gradient
 
 
-# TransformerRSSM model
-class RSSM(fl.Module):
+# TRSSM = Transformer Recurrent State Space Model
+class RSSM(nj.Module):
     # hyperparameters with defaults
     deter: int = 4096  # size of deterministic hidden state
     hidden: int = 2048  # hidden layer size for networks
@@ -25,65 +24,72 @@ class RSSM(fl.Module):
     unroll: bool = False  # whether to use scanning for unrolling time
     unimix: float = 0.01  # uniform mixing for discrete distributions
     outscale: float = 1.0  # output scale for logits
+    imglayers: int = 2  # layers in image decoder (prior)
+    obslayers: int = 1  # layers in observation encoder (posterior)
+    dynlayers: int = 1  # number of layers in dynamics model
+    absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
-    layers: int = 3  # number of transformer layers
+    free_nats: float = 1.0  # threshold for KL regularization
 
-    # Space and action space
-    act_space: dict = None
-    kw: dict = None
+    def __init__(self, act_space, **kw):
+        # ensure compatibility with BlockLinear
+        assert self.deter % self.blocks == 0
+        # action space description
+        self.act_space = act_space
+        # additional kwargs passed to submodules
+        self.kw = kw
 
-    def setup(self):
-        # Define transformer layers for processing tokens, actions, and states
-        self.attn_layers = [
-            fl.MultiHeadDotProductAttention(
-                num_heads=8, dtype=jnp.float32
-            ) for _ in range(self.layers)
-        ]
-        self.ffn_layers = [
-            fl.Sequential([
-                fl.Dense(self.hidden),
-                jax.nn.gelu,
-                fl.Dense(self.deter)
-            ]) for _ in range(self.layers)
-        ]
-        self.norm_layers = [fl.LayerNorm() for _ in range(self.layers)]
+    @property
+    def entry_space(self):
+        # Shape of latent entries returned at each timestep
+        return dict(
+            deter=elements.Space(np.float32, self.deter),
+            stoch=elements.Space(np.float32, (self.stoch, self.classes)))
 
     def initial(self, bsize):
+        # initial state (zeroed)
         carry = nn.cast(dict(
-            deter=jnp.zeros([bsize, self.deter], jnp.float32),
-            stoch=jnp.zeros([bsize, self.stoch, self.classes], jnp.float32)
-        ))
+            deter=jnp.zeros([bsize, self.deter], f32),
+            stoch=jnp.zeros([bsize, self.stoch, self.classes], f32)))
         return carry
 
+    def truncate(self, entries, carry=None):
+        # extract last timestep to serve as initial state for next episode
+        assert entries['deter'].ndim == 3, entries['deter'].shape
+        carry = jax.tree.map(lambda x: x[:, -1], entries)
+        return carry
+
+    def starts(self, entries, carry, nlast):
+        # prepare sequences starting from last n steps
+        B = len(jax.tree.leaves(carry)[0])
+        return jax.tree.map(
+            lambda x: x[:, -nlast:].reshape((B * nlast, *x.shape[2:])), entries)
+
     def observe(self, carry, tokens, action, reset, training, single=False):
-        # Encode the observation given tokens and actions
+        # encodes observations (posterior) given inputs
         carry, tokens, action = nn.cast((carry, tokens, action))
         if single:
             carry, (entry, feat) = self._observe(carry, tokens, action, reset, training)
             return carry, entry, feat
         else:
             unroll = jax.tree.leaves(tokens)[0].shape[1] if self.unroll else 1
-            carry, (entries, feat) = jax.lax.scan(
+            carry, (entries, feat) = nj.scan(
                 lambda carry, inputs: self._observe(carry, *inputs, training),
-                carry, (tokens, action, reset), unroll=unroll, axis=1
-            )
+                carry, (tokens, action, reset), unroll=unroll, axis=1)
             return carry, entries, feat
 
     def _observe(self, carry, tokens, action, reset, training):
-        # One-step observation processing
+        # processes one step of observation encoding
         deter, stoch, action = nn.mask((carry['deter'], carry['stoch'], action), ~reset)
         action = nn.DictConcat(self.act_space, 1)(action)
         action = nn.mask(action, ~reset)
-        deter = self._core(deter, stoch, action)
-
-        # Apply transformer processing to tokens
+        # transformer core
+        deter = self.trf_core(deter, stoch, action)
         tokens = tokens.reshape((*deter.shape[:-1], -1))
-        x = jnp.concatenate([deter, tokens], -1)  # Concatenate deterministic state and tokens
-        for i in range(self.layers):
-            x = self.attn_layers[i](x, x, x)  # Apply attention layers
-            x = self.ffn_layers[i](x)  # Apply feed-forward layers
-            x = self.norm_layers[i](x)  # Apply layer normalization
-
+        x = tokens if self.absolute else jnp.concatenate([deter, tokens], -1)
+        for i in range(self.obslayers):
+            x = self.sub(f'obs{i}', nn.Linear, self.hidden, **self.kw)(x)
+            x = nn.act(self.act)(self.sub(f'obs{i}norm', nn.Norm, self.norm)(x))
         logit = self._logit('obslogit', x)
         stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
         carry = dict(deter=deter, stoch=stoch)
@@ -91,39 +97,98 @@ class RSSM(fl.Module):
         entry = dict(deter=deter, stoch=stoch)
         return carry, (entry, feat)
 
-    def _core(self, deter, stoch, action):
-        # Main recurrent dynamics function using transformer and MLP
-        stoch = stoch.reshape((stoch.shape[0], -1))
-        action /= nn.sg(jnp.maximum(1, jnp.abs(action)))
+    def imagine(self, carry, policy, length, training, single=False):
+        # predicts future latent states using learned dynamics and a policy
+        if single:
+            action = policy(sg(carry)) if callable(policy) else policy
+            actemb = nn.DictConcat(self.act_space, 1)(action)
+            deter = self.trf_core(carry['deter'], carry['stoch'], actemb)
+            logit = self._prior(deter)
+            stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
+            carry = nn.cast(dict(deter=deter, stoch=stoch))
+            feat = nn.cast(dict(deter=deter, stoch=stoch, logit=logit))
+            return carry, (feat, action)
+        else:
+            unroll = length if self.unroll else 1
+            if callable(policy):
+                carry, (feat, action) = nj.scan(
+                    lambda c, _: self.imagine(c, policy, 1, training, single=True),
+                    nn.cast(carry), (), length, unroll=unroll, axis=1)
+            else:
+                carry, (feat, action) = nj.scan(
+                    lambda c, a: self.imagine(c, a, 1, training, single=True),
+                    nn.cast(carry), nn.cast(policy), length, unroll=unroll, axis=1)
+            # We can also return all carry entries but it might be expensive.
+            # entries = dict(deter=feat['deter'], stoch=feat['stoch'])
+            # return carry, entries, feat, action
+            return carry, feat, action
 
-        # Process inputs (deterministic state, stochastic variables, action)
+    def loss(self, carry, tokens, acts, reset, training):
+        # computes KL divergence loss between posterior and prior
+        metrics = {}
+        carry, entries, feat = self.observe(carry, tokens, acts, reset, training)
+        # predicted prior from dynamics
+        prior = self._prior(feat['deter'])
+        # actual posterior from observation
+        post = feat['logit']
+        # stop-grad posterior
+        dyn = self._dist(sg(post)).kl(self._dist(prior))
+        # stop-grad prior
+        rep = self._dist(post).kl(self._dist(sg(prior)))
+        if self.free_nats:
+            dyn = jnp.maximum(dyn, self.free_nats)
+            rep = jnp.maximum(rep, self.free_nats)
+        losses = {'dyn': dyn, 'rep': rep}
+        metrics['dyn_ent'] = self._dist(prior).entropy().mean()
+        metrics['rep_ent'] = self._dist(post).entropy().mean()
+        return carry, entries, losses, feat, metrics
+
+    def trf_core(self, deter, stoch, action):
+        # use Transformer for recurrent dynamics instead of GRU
+        stoch = stoch.reshape((stoch.shape[0], -1))
+        action /= sg(jnp.maximum(1, jnp.abs(action)))
+
+        # prepare inputs for Transformer
+        # project inputs to hidden dimension
         x0 = self.sub('dynin0', nn.Linear, self.hidden, **self.kw)(deter)
         x0 = nn.act(self.act)(self.sub('dynin0norm', nn.Norm, self.norm)(x0))
         x1 = self.sub('dynin1', nn.Linear, self.hidden, **self.kw)(stoch)
         x1 = nn.act(self.act)(self.sub('dynin1norm', nn.Norm, self.norm)(x1))
         x2 = self.sub('dynin2', nn.Linear, self.hidden, **self.kw)(action)
         x2 = nn.act(self.act)(self.sub('dynin2norm', nn.Norm, self.norm)(x2))
-        x = jnp.concatenate([x0, x1, x2], -1)
 
-        # Apply the transformer layers to the concatenated state
-        for i in range(self.layers):
-            x = self.attn_layers[i](x, x, x)  # Apply attention layers
-            x = self.ffn_layers[i](x)  # Apply feed-forward layers
-            x = self.norm_layers[i](x)  # Apply layer normalization
+        # stack the inputs for the Transformer (concatenation messes up the shape)
+        x = jnp.stack([x0, x1, x2], axis=1)
 
-        # Output computation
-        x = self.sub('dyngru', nn.Linear, self.deter, **self.kw)(x)
-        deter = jax.nn.sigmoid(x)
+        # use transformer for recurrent processing
+        x = self.sub('transformer', nn.Transformer,
+                     units=self.hidden,
+                     act=self.act,
+                     norm=self.norm,
+                     outscale=self.outscale)(x)
+        x = x.reshape(x.shape[0], -1)
+
+        # project back to deterministic state size
+        deter = self.sub('dynout', nn.Linear, self.deter, **self.kw)(x)
+
         return deter
 
+    def _prior(self, feat):
+        # computes prior distribution logits
+        x = feat
+        for i in range(self.imglayers):
+            x = self.sub(f'prior{i}', nn.Linear, self.hidden, **self.kw)(x)
+            x = nn.act(self.act)(self.sub(f'prior{i}norm', nn.Norm, self.norm)(x))
+        return self._logit('priorlogit', x)
+
     def _logit(self, name, x):
-        # Converts the final feature vector into logits
+        # converts feature vector into logits over stochastic variables
         kw = dict(**self.kw, outscale=self.outscale)
         x = self.sub(name, nn.Linear, self.stoch * self.classes, **kw)(x)
         return x.reshape(x.shape[:-1] + (self.stoch, self.classes))
 
     def _dist(self, logits):
-        # Returns a categorical distribution over the logits
+        # returns a categorical distribution over logits with uniform mixing
         out = embodied.jax.outs.OneHot(logits, self.unimix)
         out = embodied.jax.outs.Agg(out, 1, jnp.sum)
         return out
