@@ -323,6 +323,27 @@ class Conv2D(nj.Module):
     return init(self.winit)(*args, **kwargs) * self.outscale
 
 
+class ConvNeXtBlock(nj.Module):
+  dim: int
+  mlp_ratio: float = 4.0
+  norm: str = 'layer'
+  act: str = 'gelu'
+
+  def __call__(self, x, name=''):
+    shortcut = x
+    # Depthwise conv
+    x = self.sub(f'{name}_dwconv', Conv2D, depth=self.dim,
+                 kernel=7, stride=1, groups=self.dim)(x)
+    # LayerNorm
+    x = self.sub(f'{name}_norm', Norm, self.norm)(x)
+    # MLP: Linear -> GELU -> Linear
+    x = self.sub(f'{name}_mlp1', Linear, int(self.dim * self.mlp_ratio))(x)
+    x = act(self.act)(x)
+    x = self.sub(f'{name}_mlp2', Linear, self.dim)(x)
+
+    return shortcut + x
+
+
 class Conv3D(nj.Module):
 
   transp: bool = False
