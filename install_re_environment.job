@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#SBATCH --partition=rome
+#SBATCH --partition=gpu_a100
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=9
 #SBATCH --job-name=install_re_env
 #SBATCH --ntasks=1
