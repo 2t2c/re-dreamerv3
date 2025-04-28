@@ -37,4 +37,4 @@ dependencies:
       - tqdm
       - wandb
       - moviepy==2.1.2
-      - flax==0.10.6
+      # - flax==0.10.6 <- incompatible with jax[cuda]=0.4.33. requires jax[cuda]=0.5.1
