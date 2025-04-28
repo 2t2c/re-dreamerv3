@@ -32,3 +32,4 @@ dependencies:
       - tqdm
       - wandb
       - moviepy==2.1.2
+      - pandas # required for plot.py
