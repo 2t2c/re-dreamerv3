@@ -70,7 +70,7 @@ defaults:
     remote_envs: False
     usage: {psutil: True, nvsmi: True, gputil: False, malloc: False, gc: False}
     debug: True
-    actor_process: True
+    actor_process: True # allow each env to get its own cpu [only does smt when running parrallel script]
 
   jax:
     platform: cuda
@@ -186,6 +186,7 @@ dmc_proprio:
   run: {steps: 1.1e6, train_ratio: 1024}
 
 dmc_vision:
+  <<: *size12m
   task: dmc_cheetah_run 
   env.dmc.proprio: False
   run: {steps: 1.1e6, train_ratio: 256}
