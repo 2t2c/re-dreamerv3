@@ -26,8 +26,6 @@ srun python "${DIR}/dreamerv3/main.py" \
     --run_name "re_${TASK}" \
     --project snellius \
     --script parallel \
-    --run.actor_process True \
-    --run.envs 16 \
     --configs dmc_vision \
     --logdir "${DIR}/logdir/dreamerv3/${TASK}/${SEED}/{timestamp}" \
     --seed "$SEED"
