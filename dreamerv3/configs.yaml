@@ -70,6 +70,7 @@ defaults:
     remote_envs: False
     usage: {psutil: True, nvsmi: True, gputil: False, malloc: False, gc: False}
     debug: True
+    actor_process: True, # each env instance gets its own process (cpu) so faster
 
   jax:
     platform: cuda
