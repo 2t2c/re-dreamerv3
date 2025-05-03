@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1
 #SBATCH --time=04:00:00
 #SBATCH --mem=32000M
-#SBATCH --output=re_cheetah_run_vc_seed_${SEED}_%A.out
+#SBATCH --output=re_cheetah_run_vc_%A.out
 
 module purge
 module load 2024
