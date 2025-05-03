@@ -185,7 +185,7 @@ dmc_proprio:
   run: {steps: 1.1e6, train_ratio: 1024}
 
 dmc_vision:
-  task: dmc_walker_walk
+  task: dmc_cheetah_run 
   env.dmc.proprio: False
   run: {steps: 1.1e6, train_ratio: 256}
 
