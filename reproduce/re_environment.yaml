@@ -1,3 +1,5 @@
+# The same as `environment.yaml` but without the `flax` dependency.
+
 name: dreamerv3_reproduce
 channels:
   - nvidia

@@ -16,4 +16,4 @@ module load 2023
 module load Anaconda3/2023.07-2
 
 cd $HOME/re-dreamerv3/
-conda env create -f re_environment.yaml
+conda env create -f reproduce/re_environment.yaml
