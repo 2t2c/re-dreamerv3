@@ -6,7 +6,7 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=re_cheetah_run_vc
 #SBATCH --ntasks=1
-#SBATCH --time=04:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mem=40000M
 #SBATCH --output=re_cheetah_run_vc_%A.out
 
