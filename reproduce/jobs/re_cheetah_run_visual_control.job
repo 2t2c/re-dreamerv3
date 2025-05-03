@@ -7,7 +7,7 @@
 #SBATCH --job-name=re_cheetah_run_vc
 #SBATCH --ntasks=1
 #SBATCH --time=04:00:00
-#SBATCH --mem=32000M
+#SBATCH --mem=40000M
 #SBATCH --output=re_cheetah_run_vc_%A.out
 
 module purge
@@ -25,6 +25,9 @@ DIR=$HOME/re-dreamerv3/
 srun python "${DIR}/dreamerv3/main.py" \
     --run_name "re_${TASK}" \
     --project snellius \
+    --script parallel \
+    --run.actor_process True \
+    --run.envs 16 \
     --configs dmc_vision \
-    --logdir "${DIR}/logdir/dreamerv3/${TASK}/${SEED}/${TIMESTAMP}" \
+    --logdir "${DIR}/logdir/dreamerv3/${TASK}/${SEED}/{timestamp}" \
     --seed "$SEED"
