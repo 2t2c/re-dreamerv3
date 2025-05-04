@@ -1,18 +1,19 @@
 import json
 import argparse
 from pathlib import Path
-import sys # Import sys for exiting on critical errors
+import sys 
 
-def convert_json_to_jsonl(input_filepath, target_task, output_basedir):
+def convert_json_to_jsonl(input_filepath, target_task, output_basedir, env_name):
     """
     Converts data for a specific task from a structured JSON file
     to JSON Lines format, creating separate output files per run
-    in directories named 'visual_control-<task>-<method>-seed<seed>'.
+    in directories named '<env>-<task>-<method>-seed<seed>'.
 
     Args:
         input_filepath (Path): Path to the input JSON file.
         target_task (str): The specific task name to extract data for.
         output_basedir (Path): The base directory to create run-specific folders in.
+        env_name (str): Name of the environment.
     """
     print(f"Loading input file: {input_filepath}")
     try:
@@ -77,7 +78,7 @@ def convert_json_to_jsonl(input_filepath, target_task, output_basedir):
 
         # --- Prepare Output ---
         # Construct the new directory name
-        run_dir_name = f"visual_control-{record_task}-{record_method}-seed{record_seed}"
+        run_dir_name = f"{env_name}-{record_task}-{record_method}-seed{record_seed}"
         run_dir = output_basedir / run_dir_name
 
         try:
@@ -148,8 +149,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o", "--output-dir",
         type=str,
-        default="converted_runs", # Changed default name slightly
-        help="Base directory where run-specific folders (e.g., visual_control-...) will be created."
+        default="converted_runs",
+        help="Base directory where run-specific folders will be created."
     )
 
     args = parser.parse_args()
@@ -157,4 +158,4 @@ if __name__ == "__main__":
     input_path = Path(args.input_file)
     output_base_path = Path(args.output_dir)
 
-    convert_json_to_jsonl(input_path, args.task_name, output_base_path)
+    convert_json_to_jsonl(input_path, args.task_name, output_base_path, args.env_name)
