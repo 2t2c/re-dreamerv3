@@ -41,13 +41,13 @@ class Agent(embodied.jax.Agent):
         # enc_space, dec_space: env. observation space
         # act_space: env. action space
         self.enc = {
-            'simple': rssmv2.Encoder,
+            'simple': rssm.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
         self.dyn = {
-            'rssm': rssmv2.RSSM,
+            'rssm': rssm.RSSM,
         }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
         self.dec = {
-            'simple': rssmv2.Decoder,
+            'simple': rssm.Decoder,
         }[config.dec.typ](dec_space, **config.dec[config.dec.typ], name='dec')
 
         self.feat2tensor = lambda x: jnp.concatenate([
