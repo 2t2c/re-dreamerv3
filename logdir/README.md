@@ -1,6 +1,6 @@
 # DreamerV3 Score Conversion and Plotting
 
-This directory (`/scores`) contains the original results provided by the DreamerV3 paper. These files are **not** in the format required by the `plot.py` however so we need to convert them appropriately. After conversion they are stored in `/logdir/dreamerv3`. Reproducibility study results are stored in `/logdir/re-dreamerv3`.
+The `/scores` directory contains the original results provided by the DreamerV3 paper. These results are **not** in the format required by the `plot.py`, however, so we need to convert them appropriately. After conversion they are stored in `/logdir/original`. Reproducibility study results are stored in `/logdir/reproducibility`.
 
 ## How to Convert Scores from `/scores` for `plot.py`
 
@@ -21,7 +21,7 @@ python json_score_converter.py \
   --input-file <extracted_scores_file_name>.json \
   --env-name <environment_name> \
   --task-name <task_name_as_used_in_config_yaml> \
-  --output_dir logdir/dreamerv3
+  --output_dir logdir/original
 ```
 
 **Important:** Do not use hyphens (-) in the strings passed to `json_score_converter.py` for `--env-name`, `--task-name`, or `--method`.`plot.py` uses the hyphen as a delimiter, and including it in the names might break the script.
