@@ -204,10 +204,20 @@ def make_logger(config):
             outputs.append(elements.logger.ExpaOutput(
                 exp, run, proj, config.logger.user, config.flat))
         elif output == 'wandb':
-            name = config.run_name + "-" + '/'.join(logdir.split('/')[-3:])
-            outputs.append(elements.logger.WandBOutput(name=name,
+            name = config.run_name + ''.join(logdir.split('logdir')[-1])
+            wnb_logger = elements.logger.WandBOutput(name=name,
                                                        entity="dreamerz",
-                                                       project=config.project))
+                                                       project=config.project)
+            # log generic params
+            wnb_logger._wandb.log({
+                "batch_size": config.batch_size,
+                "seed": config.seed,
+                "task": config.task,
+                "steps": config.run.steps,
+                "train_ratio": config.run.train_ratio,
+                "logdir": config.logdir,
+            })
+            outputs.append(wnb_logger)
         elif output == 'scope':
             outputs.append(elements.logger.ScopeOutput(elements.Path(logdir)))
         else:

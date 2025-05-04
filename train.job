@@ -20,13 +20,14 @@ source activate re-dreamer
 
 # global parameters
 SEED=0
-TASK=re_atari100k_private_eye
+TASK=atari100k_private_eye
+PROJECT=reproducibility
 DIR=$HOME/re-dreamerv3/
 
 srun python "${DIR}/dreamerv3/main.py" \
-    --run_name "re_${TASK}" \
-    --project "reproducibility" \
-    --logdir $HOME/logdir/${TASK}/${SEED}/{timestamp} \
+    --run_name "${TASK}" \
+    --project "${PROJECT}" \
+    --logdir $HOME/logdir/${PROJECT}/${TASK}/${SEED}/{timestamp} \
     --configs atari100k size1m \
     --run.steps 25000 \
     --run.train_ratio 32 \
