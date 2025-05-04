@@ -1,4 +1,4 @@
-from .base import Agent, Env
+from .base import Agent, Env, Stream
 
 from .clock import GlobalClock
 from .clock import LocalClock

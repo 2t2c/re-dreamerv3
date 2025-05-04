@@ -10,7 +10,7 @@ def train(
     make_agent: Callable[[], embodied.Agent],
     make_replay: Callable[[], embodied.Replay],
     make_env: Callable[[], embodied.Env],
-    make_stream: Callable[[], base.Stream],
+    make_stream: Callable[[embodied.Replay, str], base.Stream],
     make_logger: Callable[[], elements.Logger],
     args: Any,
 ):
