@@ -187,14 +187,14 @@ dmc_proprio:
 
 dmc_vision:
   # Configuration as per DreamerV3 Table 2.
-  <<: *size12m
+  <<: *size12m # 12M param model.
   task: dmc_cheetah_run 
   env:
     dmc:
       proprio: False
-      repeat: 2
+      repeat: 2 # Table 2 Action Repeat.
   run:
-    steps: 1.1e6
+    steps: 0.51e6 # Table 2 Env Steps = 1M. But this param defines Agent steps = Env Steps / Action Repeat.
     train_ratio: 512
     envs: 16
 
