@@ -6,7 +6,7 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=train
 #SBATCH --ntasks=1
-#SBATCH --time=02:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=train_output_%A.out
 
@@ -18,8 +18,17 @@ module load Anaconda3/2023.07-2
 
 source activate re-dreamer
 
-srun python dreamerv3/main.py \
-    --logdir $HOME/logdir/dreamer/{timestamp} \
-    --configs atari100k \
+# global parameters
+SEED=0
+TASK=re_atari100k_private_eye
+DIR=$HOME/re-dreamerv3/
+
+srun python "${DIR}/dreamerv3/main.py" \
+    --run_name "re_${TASK}" \
+    --project "reproducibility" \
+    --logdir $HOME/logdir/${TASK}/${SEED}/{timestamp} \
+    --configs atari100k size1m \
+    --run.steps 25000 \
     --run.train_ratio 32 \
-    --batch_size 16
+    --batch_size 16 \
+    --seed "$SEED"

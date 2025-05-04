@@ -188,7 +188,7 @@ dmc_proprio:
 dmc_vision:
   # Configuration as per DreamerV3 Table 2.
   <<: *size12m # 12M param model.
-  task: dmc_cheetah_run 
+  task: dmc_cheetah_run
   env:
     dmc:
       proprio: False
