@@ -257,7 +257,7 @@ class Encoder(nj.Module):
             # adding multi-head attention after MLP layers
             attention_module = self.sub('attn_vec', nn.Attention,
                                         heads=self.attention_heads,
-                                        kv_heads=0, dropout=0.25)
+                                        kv_heads=0, dropout=0.1)
             x = attention_module(x, training=training)
             outs.append(x)
 
@@ -294,7 +294,7 @@ class Encoder(nj.Module):
             x = x.reshape((x.shape[0], -1, x.shape[-1]))
             attention_module = self.sub('attn_img', nn.Attention,
                                         heads=self.attention_heads,
-                                        kv_heads=0, dropout=0.25)
+                                        kv_heads=0, dropout=0.1)
             x = attention_module(x, training=training)
             outs.append(x)
 
@@ -405,7 +405,7 @@ class Decoder(nj.Module):
             # apply attention
             attn = self.sub('attn_img', nn.Attention,
                             heads=self.attention_heads,
-                            dropout=0.25)(x_flat, training=training)
+                            dropout=0.1)(x_flat, training=training)
             # residual connection and reshape back
             x = x_flat + attn
             x = x.reshape((B, H, W, C))
