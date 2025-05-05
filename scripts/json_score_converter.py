@@ -78,7 +78,7 @@ def convert_json_to_jsonl(input_filepath, target_task, output_basedir):
 
         # --- Prepare Output ---
         # Construct the new directory name
-        run_dir_path = f"{record_task}/{record_method}/seed{record_seed}"
+        run_dir_path = f"{record_task}/{record_method}/seed_{record_seed}"
         run_dir = output_basedir / run_dir_path
 
         try:

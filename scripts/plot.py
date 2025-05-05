@@ -159,7 +159,7 @@ def comp_count(name, df):
 def comp_stats(df, args):
   print('Computing stats...')
   refs = yaml.YAML(typ='safe').load(
-      (elements.Path(__file__).parent / 'baselines.yaml').read())
+      (elements.Path(__file__).parent / '../baselines.yaml').read())
   self_baseline = df.groupby('task')['ys'].agg(lambda ys: (
       min(min(y) for y in ys), max(max(y) for y in ys))).to_dict()
   stats = []
@@ -405,7 +405,7 @@ if __name__ == '__main__':
   main(elements.Flags(
       pattern='**/scores.jsonl',
       indirs=[''],
-      outdir='',
+      outdir='../logdir/reproducibility',
       methods='.*',
       tasks='.*',
       newstyle=False,
