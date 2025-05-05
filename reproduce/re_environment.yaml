@@ -1,0 +1,37 @@
+# The same as `environment.yaml` but without the `flax` dependency.
+
+name: dreamerv3_reproduce
+channels:
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - ale_py==0.9.0
+      - autorom[accept-rom-license]==0.6.1
+      - procgen_mirror
+      - crafter
+      - dm_control
+      - memory_maze
+      - av
+      - chex
+      - colored_traceback
+      - einops
+      - elements>=3.19.1
+      - google-resumable-media>=2.7.2
+      - granular>=0.20.3
+      - ipdb
+      - jax[cuda]==0.4.33
+      - jaxtyping
+      - ninjax>=3.5.1
+      - numpy<2 # DMLab: <2, MineRLv1.0: <1.24
+      - nvidia-cuda-nvcc-cu12<=12.2
+      - optax
+      - portal>=3.5.0
+      - scope>=0.4.4
+      - tqdm
+      - wandb
+      - moviepy==2.1.2
+      - pandas # required for plot.py
