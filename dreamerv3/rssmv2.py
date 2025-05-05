@@ -95,6 +95,7 @@ class RSSM(nj.Module):
         carry = dict(deter=deter, stoch=stoch)
         feat = dict(deter=deter, stoch=stoch, logit=logit)
         entry = dict(deter=deter, stoch=stoch)
+        assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
         return carry, (entry, feat)
 
     def imagine(self, carry, policy, length, training, single=False):
@@ -107,6 +108,7 @@ class RSSM(nj.Module):
             stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
             carry = nn.cast(dict(deter=deter, stoch=stoch))
             feat = nn.cast(dict(deter=deter, stoch=stoch, logit=logit))
+            assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
             return carry, (feat, action)
         else:
             unroll = length if self.unroll else 1
