@@ -30,6 +30,8 @@ class RSSM(nj.Module):
     absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
     free_nats: float = 1.0  # threshold for KL regularization
+    trf_layers: int = 4 # transformer blocks
+    attention_heads: int = 8 # attention heads
 
     def __init__(self, act_space, **kw):
         # ensure compatibility with BlockLinear
@@ -165,6 +167,8 @@ class RSSM(nj.Module):
         # use transformer for recurrent processing
         x = self.sub('transformer', nn.Transformer,
                      units=self.hidden,
+                     layers=self.trf_layers,
+                     heads=self.attention_heads,
                      act=self.act,
                      norm=self.norm,
                      outscale=self.outscale)(x)
