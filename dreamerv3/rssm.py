@@ -93,6 +93,7 @@ class RSSM(nj.Module):
         carry = dict(deter=deter, stoch=stoch)
         feat = dict(deter=deter, stoch=stoch, logit=logit)
         entry = dict(deter=deter, stoch=stoch)
+        assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
         return carry, (entry, feat)
 
     def imagine(self, carry, policy, length, training, single=False):
@@ -105,6 +106,7 @@ class RSSM(nj.Module):
             stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
             carry = nn.cast(dict(deter=deter, stoch=stoch))
             feat = nn.cast(dict(deter=deter, stoch=stoch, logit=logit))
+            assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
             return carry, (feat, action)
         else:
             unroll = length if self.unroll else 1
@@ -160,7 +162,8 @@ class RSSM(nj.Module):
             x = self.sub(f'dynhid{i}', nn.BlockLinear, self.deter, g, **self.kw)(x)
             x = nn.act(self.act)(self.sub(f'dynhid{i}norm', nn.Norm, self.norm)(x))
         x = self.sub('dyngru', nn.BlockLinear, 3 * self.deter, g, **self.kw)(x)
-        reset, cand, update = [group2flat(x) for x in jnp.split(flat2group(x), 3, -1)]
+        gates = jnp.split(flat2group(x), 3, -1)
+        reset, cand, update = [group2flat(x) for x in gates]
         reset = jax.nn.sigmoid(reset)
         cand = jnp.tanh(reset * cand)
         update = jax.nn.sigmoid(update - 1)
