@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import sys 
 
-def convert_json_to_jsonl(input_filepath, target_task, output_basedir, env_name):
+def convert_json_to_jsonl(input_filepath, target_task, output_basedir):
     """
     Converts data for a specific task from a structured JSON file
     to JSON Lines format, creating separate output files per run
@@ -78,8 +78,8 @@ def convert_json_to_jsonl(input_filepath, target_task, output_basedir, env_name)
 
         # --- Prepare Output ---
         # Construct the new directory name
-        run_dir_name = f"{env_name}-{record_task}-{record_method}-seed{record_seed}"
-        run_dir = output_basedir / run_dir_name
+        run_dir_path = f"{record_task}/{record_method}/seed{record_seed}"
+        run_dir = output_basedir / run_dir_path
 
         try:
             run_dir.mkdir(parents=True, exist_ok=True)
@@ -135,12 +135,6 @@ if __name__ == "__main__":
         help="Path to the input JSON file (list-of-dictionaries format)."
     )
     parser.add_argument(
-        "-e", "--env-name",
-        type=str,
-        required=True,
-        help="The environment name used in the names of the output files."
-    )
-    parser.add_argument(
         "-t", "--task-name",
         type=str,
         required=True,
@@ -158,4 +152,4 @@ if __name__ == "__main__":
     input_path = Path(args.input_file)
     output_base_path = Path(args.output_dir)
 
-    convert_json_to_jsonl(input_path, args.task_name, output_base_path, args.env_name)
+    convert_json_to_jsonl(input_path, args.task_name, output_base_path)

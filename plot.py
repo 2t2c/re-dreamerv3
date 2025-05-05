@@ -408,7 +408,7 @@ if __name__ == '__main__':
       outdir='',
       methods='.*',
       tasks='.*',
-      newstyle=True,
+      newstyle=False,
       indir_prefix=False,
       workers=16,
       xkeys=['xs', 'step'],
