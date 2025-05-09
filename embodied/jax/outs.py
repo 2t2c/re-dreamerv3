@@ -207,13 +207,24 @@ class Binary(Output):
 
 class Categorical(Output):
 
-  def __init__(self, logits, unimix=0.0):
+  def __init__(self, logits, unimix=0.0, adaptive_unimix=False):
     logits = f32(logits)
+    probs = jax.nn.softmax(logits, -1)
     if unimix:
-      probs = jax.nn.softmax(logits, -1)
       uniform = jnp.ones_like(probs) / probs.shape[-1]
       probs = (1 - unimix) * probs + unimix * uniform
       logits = jnp.log(probs)
+    if adaptive_unimix:
+      # compute entropy
+      entropy = -jnp.sum(probs * jnp.log(jnp.clip(probs, 1e-8)), axis=-1, keepdims=True)
+      max_entropy = jnp.log(probs.shape[-1])
+      scale = entropy / max_entropy  # scale in [0, 1]
+      # compute adaptive unimix: more smoothing if entropy is low
+      adpt_unimix = unimix * (1.0 - scale)
+      # apply uniform mix
+      uniform = jnp.ones_like(probs) / probs.shape[-1]
+      probs = (1.0 - adpt_unimix) * probs + adpt_unimix * uniform
+      logits = jnp.log(jnp.clip(probs, 1e-8))
     self.logits = logits
 
   def pred(self):
@@ -242,8 +253,8 @@ class Categorical(Output):
 
 class OneHot(Output):
 
-  def __init__(self, logits, unimix=0.0):
-    self.dist = Categorical(logits, unimix)
+  def __init__(self, logits, unimix=0.0, adaptive_unimix=False):
+    self.dist = Categorical(logits, unimix, adaptive_unimix)
 
   def pred(self):
     index = self.dist.pred()

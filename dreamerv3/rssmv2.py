@@ -23,6 +23,7 @@ class RSSM(nj.Module):
     act: str = 'gelu'  # activation function
     unroll: bool = False  # whether to use scanning for unrolling time
     unimix: float = 0.01  # uniform mixing for discrete distributions
+    adaptive_unimix: bool = True  # whether to adaptively mix unimix
     outscale: float = 1.0  # output scale for logits
     imglayers: int = 2  # layers in image decoder (prior)
     obslayers: int = 1  # layers in observation encoder (posterior)
@@ -162,8 +163,15 @@ class RSSM(nj.Module):
         x2 = nn.act(self.act)(self.sub('dynin2norm', nn.Norm, self.norm)(x2))
 
         # stack the inputs for the Transformer (concatenation messes up the shape)
-        x = jnp.stack([x0, x1, x2], axis=1)
-
+        seq = jnp.stack([x0, x1, x2], axis=1)
+        B, seq_len, _ = seq.shape
+        # create time steps for positional encoding (RoPE)
+        ts = jnp.arange(seq_len)[None, :]  # [1, seq_len]
+        ts = jnp.repeat(ts, B, axis=0)  # expand for batch: (B, seq_len)
+        # create mask for causal masking
+        mask = jnp.tril(jnp.ones((seq_len, seq_len)))
+        mask = mask[None, :, :]  # add batch dimension: (1, seq_len, seq_len)
+        mask = jnp.repeat(mask, B, axis=0)  # expand for batch: (B, seq_len, seq_len)
         # use transformer for recurrent processing
         x = self.sub('transformer', nn.Transformer,
                      units=self.hidden,
@@ -171,7 +179,8 @@ class RSSM(nj.Module):
                      heads=self.attention_heads,
                      act=self.act,
                      norm=self.norm,
-                     outscale=self.outscale)(x)
+                     outscale=self.outscale)(x=seq, ts=ts,
+                                             mask=mask, training=True)
         x = x.reshape(x.shape[0], -1)
 
         # project back to deterministic state size
@@ -195,7 +204,7 @@ class RSSM(nj.Module):
 
     def _dist(self, logits):
         # returns a categorical distribution over logits with uniform mixing
-        out = embodied.jax.outs.OneHot(logits, self.unimix)
+        out = embodied.jax.outs.OneHot(logits, self.unimix, self.adaptive_unimix)
         out = embodied.jax.outs.Agg(out, 1, jnp.sum)
         return out
 
