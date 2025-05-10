@@ -196,6 +196,93 @@ class Prioritized:
     else:
       return mean
 
+class Curious:
+
+  def __init__(
+      self,           
+      alpha=1.0,
+      beta=0.99,
+      c=0.1,
+      epsilon=1e-6,
+      mix=0.05,          
+      exponent=1.0,      
+      initial=1.0,
+      branching=16,
+      seed=0):
+
+    self.alpha   = float(alpha)
+    self.beta    = float(beta)
+    self.c       = float(c)
+    self.eps     = float(epsilon)
+    self.mix     = float(mix)
+
+    self.exponent = float(exponent)
+    self.initial  = float(initial)
+
+    self.tree  = SampleTree(branching, seed)
+    self.prios = collections.defaultdict(lambda: self.initial)
+    self.visit = collections.defaultdict(int)
+    self.stepitems = collections.defaultdict(list)
+    self.items = {}
+
+  # ------------------------------------------------------------------
+  # Update priorities given raw model-losses for the corresponding
+  # step IDs.
+  # ------------------------------------------------------------------
+  def prioritize(self, stepids, losses):
+    if not isinstance(stepids[0], bytes):
+      stepids = [sid.tobytes() for sid in stepids]
+
+    for sid, loss in zip(stepids, losses):
+      v = self.visit[sid]
+      # https://github.com/AutonomousAgentsLab/cr-dv3/blob/main/dreamerv3/embodied/replay/curious_replay.py#L13
+      prio = (self.c * (self.beta ** v)
+              + (float(loss) + self.eps) ** self.alpha)
+      self.prios[sid] = prio
+      self.visit[sid] = v + 1
+
+    # Recompute item-level priorities in the sum-tree
+    keys = []
+    for sid in stepids:
+      keys += self.stepitems.get(sid, [])
+    for key in set(keys):
+      self.tree.update(key, self._aggregate(key))
+
+  def __len__(self):
+    return len(self.items)
+
+  def __call__(self):
+    key = self.tree.sample()
+    return key
+
+  def __setitem__(self, key, stepids):
+    if not isinstance(stepids[0], bytes):
+      stepids = [sid.tobytes() for sid in stepids]
+    self.items[key] = stepids
+    [self.stepitems[sid].append(key) for sid in stepids]
+    self.tree.insert(key, self._aggregate(key))
+
+  def __delitem__(self, key):
+    self.tree.remove(key)
+    stepids = self.items.pop(key)
+    for sid in stepids:
+      stepitems = self.stepitems[sid]
+      stepitems.remove(key)
+      if not stepitems:
+        del self.stepitems[sid]
+        del self.prios[sid]
+        del self.visit[sid]
+
+  def _aggregate(self, key):
+    prios = [self.prios[sid] for sid in self.items[key]]
+    if self.exponent != 1.0:
+      prios = [p ** self.exponent for p in prios]
+    mean = sum(prios) / len(prios)
+    if self.mix:
+      # Blend with uniform mass to avoid zero-probability items
+      mean = (1 - self.mix) * mean + self.mix * (sum(self.prios.values()) / len(self.prios))
+    return mean
+
 
 class Mixture:
 
