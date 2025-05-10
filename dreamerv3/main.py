@@ -254,7 +254,7 @@ def make_replay(config, folder, mode='train'):
             uniform=selectors.Uniform(),
             priority=selectors.Prioritized(**config.replay.prio),
             recency=selectors.Recency(recency),
-            curious  = selectors.Curious(**config.replay.curio),
+            # curious  = selectors.Curious(**config.replay.curio),
         ), config.replay.fracs)
 
     return embodied.replay.Replay(**kwargs)
