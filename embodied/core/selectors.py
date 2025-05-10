@@ -315,9 +315,15 @@ class Mixture:
         selector.prioritize(stepids, priorities)
   
   def __len__(self):
-    val =  min(len(sel) for sel in self.selectors.values())
-    print(f"Min length of selectors: {val}")
-    return val
+    if not self.selectors:
+          return 0
+    print(f"Selectors: {self.selectors}")
+    # selectors may be a list or a dict; get the iterable view:
+    children = (self.selectors.values()
+                if isinstance(self.selectors, dict)
+                else self.selectors)
+    return min(len(sel) for sel in children)
+    
 
 
 class SampleTree:
