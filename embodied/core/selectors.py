@@ -313,6 +313,11 @@ class Mixture:
     for selector in self.selectors:
       if hasattr(selector, 'prioritize'):
         selector.prioritize(stepids, priorities)
+  
+  def __len__(self):
+    val =  min(len(sel) for sel in self.selectors.values())
+    print(f"Min length of selectors: {val}")
+    return val
 
 
 class SampleTree:
