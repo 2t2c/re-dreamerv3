@@ -42,8 +42,9 @@ defaults:
   replay:
     size: 5e6
     online: True
-    fracs: {uniform: 0.2, priority: 0.0, recency: 0.0, curious: 0.8}
+    fracs: {uniform: 0, priority: 0.0, recency: 0.0, curious: 1.0}
     prio: {exponent: 0.8, maxfrac: 0.5, initial: inf, zero_on_sample: True}
+    curio: {exponent: 0.8, maxfrac: 0.5, initial: inf}
     priosignal: model
     recexp: 1.0
     chunksize: 1024
