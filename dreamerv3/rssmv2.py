@@ -153,7 +153,6 @@ class RSSM(nj.Module):
         stoch = stoch.reshape((stoch.shape[0], -1))
         action /= sg(jnp.maximum(1, jnp.abs(action)))
         # prepare inputs for Transformer
-        g = self.attention_heads
         # project inputs to hidden dimension
         x0 = self.sub('dynin0', nn.Linear, self.hidden, **self.kw)(deter)
         x0 = nn.act(self.act)(self.sub('dynin0norm', nn.Norm, self.norm)(x0))
@@ -163,8 +162,10 @@ class RSSM(nj.Module):
         x2 = nn.act(self.act)(self.sub('dynin2norm', nn.Norm, self.norm)(x2))
 
         # stack the inputs for the Transformer (concatenation messes up the shape)
-        x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
-        x = self.sub('projection', nn.Linear, self.hidden, **self.kw)(x)
+        x = jnp.stack([x0, x1, x2], axis=1)
+        # g = self.attention_heads
+        # x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
+        # x = self.sub('projection', nn.Linear, self.hidden, **self.kw)(x)
         # create mask for causal masking
         seq_len = x.shape[1]
         mask = jnp.tril(jnp.ones((seq_len, seq_len)))
@@ -175,9 +176,13 @@ class RSSM(nj.Module):
                      units=self.hidden,
                      layers=self.trf_layers,
                      heads=self.attention_heads,
+                     act=self.act,
+                     norm=self.norm,
+                     glu=True,
                      outscale=self.outscale)(x=x, ts=None,
-                                             mask=None, training=True)
-        deter = x.reshape(x.shape[0], -1)
+                                             mask=mask, training=True)
+        new_deter = self.sub('proj_out', nn.Linear, self.deter)(x[:, -1])
+        deter = 0.5 * new_deter + 0.5 * deter
 
         return deter
 
