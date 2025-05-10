@@ -152,8 +152,8 @@ class RSSM(nj.Module):
         # use Transformer for recurrent dynamics instead of GRU
         stoch = stoch.reshape((stoch.shape[0], -1))
         action /= sg(jnp.maximum(1, jnp.abs(action)))
-
         # prepare inputs for Transformer
+        g = self.attention_heads
         # project inputs to hidden dimension
         x0 = self.sub('dynin0', nn.Linear, self.hidden, **self.kw)(deter)
         x0 = nn.act(self.act)(self.sub('dynin0norm', nn.Norm, self.norm)(x0))
@@ -163,28 +163,21 @@ class RSSM(nj.Module):
         x2 = nn.act(self.act)(self.sub('dynin2norm', nn.Norm, self.norm)(x2))
 
         # stack the inputs for the Transformer (concatenation messes up the shape)
-        seq = jnp.stack([x0, x1, x2], axis=1)
-        B, seq_len, _ = seq.shape
-        # create time steps for positional encoding (RoPE)
-        ts = jnp.arange(seq_len)[None, :]  # [1, seq_len]
-        ts = jnp.repeat(ts, B, axis=0)  # expand for batch: (B, seq_len)
+        x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
+        x = self.sub('projection', nn.Linear, self.hidden, **self.kw)(x)
         # create mask for causal masking
+        seq_len = x.shape[1]
         mask = jnp.tril(jnp.ones((seq_len, seq_len)))
-        mask = mask[None, :, :]  # add batch dimension: (1, seq_len, seq_len)
-        mask = jnp.repeat(mask, B, axis=0)  # expand for batch: (B, seq_len, seq_len)
+        mask = mask[None, :, :]
+        mask = jnp.repeat(mask, x.shape[0], axis=0)
         # use transformer for recurrent processing
         x = self.sub('transformer', nn.Transformer,
                      units=self.hidden,
                      layers=self.trf_layers,
                      heads=self.attention_heads,
-                     act=self.act,
-                     norm=self.norm,
-                     outscale=self.outscale)(x=seq, ts=ts,
-                                             mask=mask, training=True)
-        x = x.reshape(x.shape[0], -1)
-
-        # project back to deterministic state size
-        deter = self.sub('dynout', nn.Linear, self.deter, **self.kw)(x)
+                     outscale=self.outscale)(x=x, ts=None,
+                                             mask=None, training=True)
+        deter = x.reshape(x.shape[0], -1)
 
         return deter
 
