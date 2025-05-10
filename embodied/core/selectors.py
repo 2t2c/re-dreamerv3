@@ -317,7 +317,7 @@ class Mixture:
   def __len__(self):
     if not self.selectors:
           return 0
-    print(f"Selectors: {self.selectors}")
+    print(f"Selectors: {self.selectors.keys()}")
     # selectors may be a list or a dict; get the iterable view:
     children = (self.selectors.values()
                 if isinstance(self.selectors, dict)
