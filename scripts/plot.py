@@ -90,16 +90,8 @@ def bin_runs(df, args):
   if args.xlim:
     df['xlim'] = args.xlim
   else:
-
-    # Version where x axis can differ per task/method.
-    # If we ran something for longer it will still be plotted using this version.
-    # xlim = df.groupby('task')['xs'].agg(lambda xs: max(max(x) for x in xs))
-    # df = pd.merge(df, xlim.rename('xlim'), on='task', how='left')
-
-    # Version where x axis is cut off such that all plots stop at the same x value.
-    # Uncomment whicever you prefer.
-    xmax = min(max(xs) for xs in df['xs'])
-    df['xlim'] = xmax
+    xlim = df.groupby('task')['xs'].agg(lambda xs: max(max(x) for x in xs))
+    df = pd.merge(df, xlim.rename('xlim'), on='task', how='left')
 
   if args.binsize:
     df['xlim'] = df['xlim'].max()
@@ -423,7 +415,7 @@ if __name__ == '__main__':
       size=[3, 3],
       xticks=4,
       yticks=10,
-      stats=['runs', 'auto'],
+      stats=['none'],
       agg=True,
       todf='',
   ).parse())
