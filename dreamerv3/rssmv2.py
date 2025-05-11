@@ -181,8 +181,10 @@ class RSSM(nj.Module):
                      glu=True,
                      outscale=self.outscale)(x=x, ts=None,
                                              mask=mask, training=True)
-        new_deter = self.sub('proj_out', nn.Linear, self.deter)(x[:, -1])
-        deter = 0.5 * new_deter + 0.5 * deter
+        new_deter = self.sub('proj_out', nn.Linear, 2 * self.deter)(x[:, -1])
+        gate, value = jnp.split(new_deter, 2, axis=-1)
+        gate = jax.nn.sigmoid(gate)
+        deter = gate * value + (1 - gate) * deter
 
         return deter
 
