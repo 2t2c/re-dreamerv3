@@ -215,7 +215,13 @@ def plot_runs(df, stats, args):
     style(ax, xticks=args.xticks, yticks=args.yticks)
     title = task.replace('_', ' ').replace(':', ' ').split(' ', 1)[1].title()
     ax.set_title(title)
+
+    plot_xlim_override = {
+            'dmc_cheetah_run': 1050000,
+        }
+    
     args.xlim and ax.set_xlim(0, 1.03 * args.xlim)
+    task in plot_xlim_override and ax.set_xlim(0, 1.03 * plot_xlim_override[task])
     args.ylim and ax.set_ylim(0, 1.03 * args.ylim)
     for i, method in enumerate(methods):
       try:
