@@ -163,7 +163,7 @@ class RSSM(nj.Module):
 
         # stack the inputs for the Transformer (concatenation messes up the shape)
         x = jnp.stack([x0, x1, x2], axis=1)
-        # g = self.attention_heads
+        g = self.attention_heads
         # x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
         # x = self.sub('projection', nn.Linear, self.hidden, **self.kw)(x)
         # create mask for causal masking
@@ -181,10 +181,16 @@ class RSSM(nj.Module):
                      glu=True,
                      outscale=self.outscale)(x=x, ts=None,
                                              mask=mask, training=True)
-        new_deter = self.sub('proj_out', nn.Linear, 2 * self.deter)(x[:, -1])
-        gate, value = jnp.split(new_deter, 2, axis=-1)
-        gate = jax.nn.sigmoid(gate)
-        deter = gate * value + (1 - gate) * deter
+        x = self.sub('proj_out', nn.Linear, self.deter)(x)
+        x = x.reshape(x.shape[0], -1)
+        flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
+        group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
+        gates = jnp.split(flat2group(x), 3, -1)
+        reset, cand, update = [group2flat(x) for x in gates]
+        reset = jax.nn.sigmoid(reset)
+        cand = jnp.tanh(reset * cand)
+        update = jax.nn.sigmoid(update - 1)
+        deter = update * cand + (1 - update) * deter
 
         return deter
 
