@@ -55,9 +55,11 @@ def load_runs(args):
   assert len(set(x.name for x in indirs)) == len(indirs), indirs
   records, filenames = [], []
   methods = re.compile(args.methods)
+  print(methods)
   tasks = re.compile(args.tasks)
   for indir in indirs:
     found = list(indir.glob(args.pattern))
+    print(found)
     assert found, (indir, args.pattern)
     for filename in found:
       if args.newstyle:
@@ -218,10 +220,11 @@ def plot_runs(df, stats, args):
 
     plot_xlim_override = {
             'dmc_cheetah_run': 1050000,
+            'atari100k_private_eye': 400_000,
         }
     
     args.xlim and ax.set_xlim(0, 1.03 * args.xlim)
-    task in plot_xlim_override and ax.set_xlim(0, 1.03 * plot_xlim_override[task])
+    task in plot_xlim_override and ax.set_xlim(0, 1.01 * plot_xlim_override[task])
     args.ylim and ax.set_ylim(0, 1.03 * args.ylim)
     for i, method in enumerate(methods):
       try:
@@ -254,7 +257,7 @@ def plot_runs(df, stats, args):
   outdir = elements.Path(args.outdir) / elements.Path(args.indirs[0]).stem
   outdir.mkdir()
   filename = outdir / 'curves.png'
-  fig.savefig(filename, dpi=150)
+  fig.savefig(filename, dpi=300)
   print('Saved', filename)
 
 
@@ -374,6 +377,9 @@ def natfmt(x):
 
 
 def print_summary(df):
+  print(df.columns)
+  print(df["seed"].unique())
+  print(df.iloc[:, :3])
   methods = natsort(df.method.unique())
   tasks = natsort(df.task.unique())
   seeds = natsort(df.seed.unique())
@@ -402,10 +408,11 @@ def main(args):
 if __name__ == '__main__':
   main(elements.Flags(
       pattern='**/scores.jsonl',
-      indirs=[''],
-      outdir='../logdir/reproducibility',
-      methods='.*',
-      tasks='.*',
+      indirs=['../logdir/re-dreamerv3',
+              '../logdir/original'],
+      outdir='../logdir/',
+      methods='dreamer|rssmv2|reproducibility',
+      tasks='',
       newstyle=False,
       indir_prefix=False,
       workers=16,
