@@ -614,8 +614,8 @@ class Transformer(nj.Module):
   layers: int = 12
   heads: int = 8
   ffup: int = 4
-  act: str = 'silu'
-  norm: str = 'rms'
+  act: str = 'gelu'
+  norm: str = 'layer'
   glu: bool = False
   rope: bool = True
   qknorm: str = 'none'

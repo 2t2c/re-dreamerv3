@@ -44,7 +44,7 @@ class Agent(embodied.jax.Agent):
             'simple': rssm.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
         self.dyn = {
-            'rssm': rssm.RSSM,
+            'rssm': rssmv2.RSSM,
         }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
         self.dec = {
             'simple': rssm.Decoder,
