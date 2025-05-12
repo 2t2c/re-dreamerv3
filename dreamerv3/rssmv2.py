@@ -182,15 +182,16 @@ class RSSM(nj.Module):
                      outscale=self.outscale)(x=x, ts=None,
                                              mask=mask, training=True)
         x = self.sub('proj_out', nn.Linear, self.deter)(x)
-        x = x.reshape(x.shape[0], -1)
-        flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
-        group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
-        gates = jnp.split(flat2group(x), 3, -1)
-        reset, cand, update = [group2flat(x) for x in gates]
-        reset = jax.nn.sigmoid(reset)
-        cand = jnp.tanh(reset * cand)
-        update = jax.nn.sigmoid(update - 1)
-        deter = update * cand + (1 - update) * deter
+        deter = x.mean(axis=1) + deter
+        # x = x.reshape(x.shape[0], -1)
+        # flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
+        # group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
+        # gates = jnp.split(flat2group(x), 3, -1)
+        # reset, cand, update = [group2flat(x) for x in gates]
+        # reset = jax.nn.sigmoid(reset)
+        # cand = jnp.tanh(reset * cand)
+        # update = jax.nn.sigmoid(update - 1)
+        # deter = update * cand + (1 - update) * deter
 
         return deter
 

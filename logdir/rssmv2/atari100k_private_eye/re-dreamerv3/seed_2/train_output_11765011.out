@@ -1,0 +1,932 @@
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+A.L.E: Arcade Learning Environment (version 0.9.0+750d7f9)
+[Powered by Stella]
+wandb: Using wandb-core as the SDK backend.  Please refer to https://wandb.me/wandb-core for more information.
+wandb: Currently logged in as: 2t2c (dreamerz) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.19.9
+wandb: Run data is saved locally in /gpfs/home4/scur2667/re-dreamerv3/wandb/run-20250511_222550-h3zqq6i7
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run dyn_L4_H8/rssmv2/atari100k_private_eye/dyn/2/20250511T222428
+wandb: ⭐️ View project at https://wandb.ai/dreamerz/rssmv2
+wandb: 🚀 View run at https://wandb.ai/dreamerz/rssmv2/runs/h3zqq6i7
+---  ___                           __   ______ ---
+--- |   \ _ _ ___ __ _ _ __  ___ _ \ \ / /__ / ---
+--- | |) | '_/ -_) _` | '  \/ -_) '/\ V / |_ \ ---
+--- |___/|_| \___\__,_|_|_|_\___|_|  \_/ |___/ ---
+Replica: 0 / 1
+Logdir: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428
+Run script: train
+Observations
+  image            Space(uint8, shape=(64, 64, 3), low=0, high=255)
+  reward           Space(float32, shape=(), low=-inf, high=inf)
+  is_first         Space(bool, shape=(), low=False, high=True)
+  is_last          Space(bool, shape=(), low=False, high=True)
+  is_terminal      Space(bool, shape=(), low=False, high=True)
+Actions
+  action           Space(int32, shape=(), low=0, high=18)
+Extras
+  consec           Space(int32, shape=(), low=-2147483648, high=2147483647)
+  stepid           Space(uint8, shape=(20,), low=0, high=255)
+  dyn/deter        Space(float32, shape=(8192,), low=-inf, high=inf)
+  dyn/stoch        Space(float32, shape=(32, 64), low=-inf, high=inf)
+JAX devices (1): [cuda:0]
+Policy devices: cuda:0
+Train devices:  cuda:0
+Initializing parameters...
+Optimizer opt has 165,854,740 params:
+    95,383,808 dyn
+    20,282,115 dec
+    12,850,431 val
+    12,607,506 pol
+    10,749,183 rew
+    10,488,833 con
+     3,492,864 enc
+Done initializing!
+Compiling 1 checkpoint groups...
+Largest checkpoint group: 2 GB
+Compiling train and report...
+Train cost analysis:
+  FLOPS:            4.6e+11
+  Memory (temp):    6.5e+09
+  Memory (inputs):  2.1e+09
+  Memory (outputs): 2.1e+09
+  Memory (code):    4.8e+06
+
+Report cost analysis:
+  FLOPS:            1.0e+10
+  Memory (temp):    6.7e+08
+  Memory (inputs):  5.1e+08
+  Memory (outputs): 1.0e+07
+  Memory (code):    8.3e+06
+
+Done compiling!
+Did not find any checkpoint.
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T222551F353163
+Saved checkpoint.
+Start training loop
+
+--------------------[Agent Step 8_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.06 / train/loss/dyn 3.22 / train/loss/image 285.55 / train/loss/policy -7.3e-4 / train/loss/rep 3.22 / train/loss/repval 8.98 / train/loss/rew 4.49 / train/loss/value 7.33 / train/rand/action 1 / replay/replay_ratio 126.32 / fps/policy 16.19 / fps/train 1941.8
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 12_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -1000 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 1 / train/loss/image 73.23 / train/loss/policy -1.31 / train/loss/rep 1 / train/loss/repval 5.8 / train/loss/rew 0.56 / train/loss/value 4.99 / train/rand/action 1 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2133.18
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 15_560]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.05 / train/loss/image 73.57 / train/loss/policy -2.55 / train/loss/rep 1.05 / train/loss/repval 5 / train/loss/rew 0.01 / train/loss/value 4.33 / train/rand/action 0.99 / replay/replay_ratio 260 / fps/policy 6.99 / fps/train 1788.76
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 19_520]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.01 / train/loss/image 84.73 / train/loss/policy -1.64 / train/loss/rep 1.01 / train/loss/repval 3.2 / train/loss/rew 9.8e-3 / train/loss/value 2.84 / train/rand/action 0.98 / replay/replay_ratio 260.53 / fps/policy 8.24 / fps/train 2114.01
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 23_560]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 1.04 / train/loss/image 87.68 / train/loss/policy -0.92 / train/loss/rep 1.04 / train/loss/repval 2.1 / train/loss/rew 8.9e-3 / train/loss/value 1.9 / train/rand/action 0.94 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.15
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 26_920]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.01 / train/loss/image 67.4 / train/loss/policy -0.92 / train/loss/rep 1.01 / train/loss/repval 1.66 / train/loss/rew 8.3e-3 / train/loss/value 1.29 / train/rand/action 0.86 / replay/replay_ratio 260 / fps/policy 6.96 / fps/train 1780.65
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 30_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.02 / train/loss/image 65.57 / train/loss/policy -0.27 / train/loss/rep 1.02 / train/loss/repval 1.44 / train/loss/rew 7e-3 / train/loss/value 1.13 / train/rand/action 0.79 / replay/replay_ratio 260.51 / fps/policy 8.39 / fps/train 2151.6
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T224058F349568
+Saved checkpoint.
+
+--------------------[Agent Step 34_920]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 1.05 / train/loss/image 66.59 / train/loss/policy -0.03 / train/loss/rep 1.05 / train/loss/repval 1.58 / train/loss/rew 5.6e-3 / train/loss/value 0.99 / train/rand/action 0.88 / replay/replay_ratio 259.47 / fps/policy 8.16 / fps/train 2085.31
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 38_280]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.07 / train/loss/image 60.27 / train/loss/policy -0.02 / train/loss/rep 1.07 / train/loss/repval 1.84 / train/loss/rew 5.8e-3 / train/loss/value 1.28 / train/rand/action 0.89 / replay/replay_ratio 260 / fps/policy 6.95 / fps/train 1779.96
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 42_320]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.28 / train/loss/image 53.45 / train/loss/policy 4.9e-4 / train/loss/rep 1.28 / train/loss/repval 1.87 / train/loss/rew 4.7e-3 / train/loss/value 1.28 / train/rand/action 0.82 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2149.32
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 46_280]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 0 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 1.7 / train/loss/image 50.09 / train/loss/policy 0.01 / train/loss/rep 1.7 / train/loss/repval 2.04 / train/loss/rew 4.2e-3 / train/loss/value 1.38 / train/rand/action 0.78 / replay/replay_ratio 259.47 / fps/policy 8.25 / fps/train 2107.77
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 49_680]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.59 / train/loss/image 39.64 / train/loss/policy 0.02 / train/loss/rep 1.59 / train/loss/repval 2.35 / train/loss/rew 4.5e-3 / train/loss/value 1.63 / train/rand/action 0.79 / replay/replay_ratio 260.61 / fps/policy 7.08 / fps/train 1817.07
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 53_720]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.96 / train/loss/image 31.14 / train/loss/policy 0.01 / train/loss/rep 1.96 / train/loss/repval 2.35 / train/loss/rew 3.9e-3 / train/loss/value 1.67 / train/rand/action 0.85 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.47
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 57_680]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2692 / train/loss/con 0.02 / train/loss/dyn 2.63 / train/loss/image 23.49 / train/loss/policy 0.01 / train/loss/rep 2.63 / train/loss/repval 2.25 / train/loss/rew 3.3e-3 / train/loss/value 1.6 / train/rand/action 0.89 / replay/replay_ratio 260.53 / fps/policy 8.2 / fps/train 2103.41
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T225559F664578
+Saved checkpoint.
+
+--------------------[Agent Step 61_040]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.33 / train/loss/image 18.12 / train/loss/policy 5.4e-3 / train/loss/rep 2.33 / train/loss/repval 2.36 / train/loss/rew 4.1e-3 / train/loss/value 1.64 / train/rand/action 0.89 / replay/replay_ratio 260 / fps/policy 6.97 / fps/train 1783.05
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 65_040]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 2.12 / train/loss/image 16.16 / train/loss/policy 4.7e-3 / train/loss/rep 2.12 / train/loss/repval 2.2 / train/loss/rew 4.2e-3 / train/loss/value 1.62 / train/rand/action 0.9 / replay/replay_ratio 260 / fps/policy 8.3 / fps/train 2124.54
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 68_480]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.43 / train/loss/image 15.83 / train/loss/policy 5e-3 / train/loss/rep 2.43 / train/loss/repval 2.3 / train/loss/rew 3.4e-3 / train/loss/value 1.68 / train/rand/action 0.85 / replay/replay_ratio 260 / fps/policy 7.13 / fps/train 1824.14
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 72_520]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.98 / train/loss/image 14.76 / train/loss/policy 2.6e-3 / train/loss/rep 1.98 / train/loss/repval 2.91 / train/loss/rew 3.8e-3 / train/loss/value 2.28 / train/rand/action 0.61 / replay/replay_ratio 259.49 / fps/policy 8.34 / fps/train 2131.26
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 76_520]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 0 / episode/length 2699 / train/loss/con 0.02 / train/loss/dyn 1.84 / train/loss/image 14.39 / train/loss/policy 8.2e-3 / train/loss/rep 1.84 / train/loss/repval 3.1 / train/loss/rew 2.8e-3 / train/loss/value 2.3 / train/rand/action 0.64 / replay/replay_ratio 260 / fps/policy 8.26 / fps/train 2114.25
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 79_920]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.88 / train/loss/image 14.28 / train/loss/policy 4.1e-3 / train/loss/rep 1.88 / train/loss/repval 2.1 / train/loss/rew 2.3e-3 / train/loss/value 1.66 / train/rand/action 0.92 / replay/replay_ratio 260.61 / fps/policy 7.08 / fps/train 1816.37
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 83_920]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.1 / train/loss/image 15.23 / train/loss/policy -6.3e-4 / train/loss/rep 2.1 / train/loss/repval 2.46 / train/loss/rew 2.9e-3 / train/loss/value 2.07 / train/rand/action 0.95 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2128.9
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 87_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 2.36 / train/loss/image 16.16 / train/loss/policy -8.6e-4 / train/loss/rep 2.36 / train/loss/repval 3 / train/loss/rew 2.9e-3 / train/loss/value 2.46 / train/rand/action 0.87 / replay/replay_ratio 259.49 / fps/policy 8.34 / fps/train 2131.41
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T231100F118260
+Saved checkpoint.
+
+--------------------[Agent Step 91_320]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.16 / train/loss/image 14.52 / train/loss/policy 7.6e-4 / train/loss/rep 2.16 / train/loss/repval 3 / train/loss/rew 2.8e-3 / train/loss/value 2.38 / train/rand/action 0.9 / replay/replay_ratio 260 / fps/policy 6.97 / fps/train 1783.27
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 95_320]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.85 / train/loss/image 14.15 / train/loss/policy 9.5e-4 / train/loss/rep 1.85 / train/loss/repval 3.02 / train/loss/rew 3.4e-3 / train/loss/value 2.45 / train/rand/action 0.88 / replay/replay_ratio 260 / fps/policy 8.24 / fps/train 2110.29
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 99_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 159 / episode/length 2694 / train/loss/con 0.02 / train/loss/dyn 1.93 / train/loss/image 14.22 / train/loss/policy 4.5e-3 / train/loss/rep 1.93 / train/loss/repval 2.76 / train/loss/rew 7.5e-3 / train/loss/value 2.25 / train/rand/action 0.91 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2147.47
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 102_720]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.71 / train/loss/image 13.99 / train/loss/policy -0.01 / train/loss/rep 1.71 / train/loss/repval 3.09 / train/loss/rew 0.02 / train/loss/value 2.52 / train/rand/action 0.91 / replay/replay_ratio 260 / fps/policy 7 / fps/train 1791.22
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 106_760]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.75 / train/loss/image 14.33 / train/loss/policy 1e-3 / train/loss/rep 1.75 / train/loss/repval 3.19 / train/loss/rew 0.01 / train/loss/value 2.53 / train/rand/action 0.91 / replay/replay_ratio 259.49 / fps/policy 8.36 / fps/train 2135.73
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 110_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -1000 / episode/length 2698 / train/loss/con 0.02 / train/loss/dyn 2.22 / train/loss/image 16.42 / train/loss/policy -1.6e-3 / train/loss/rep 2.22 / train/loss/repval 3.05 / train/loss/rew 0.02 / train/loss/value 2.51 / train/rand/action 0.95 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2146.85
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 114_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.92 / train/loss/image 15.63 / train/loss/policy 7.6e-7 / train/loss/rep 1.92 / train/loss/repval 2.79 / train/loss/rew 0.02 / train/loss/value 2.16 / train/rand/action 0.92 / replay/replay_ratio 260 / fps/policy 6.99 / fps/train 1788.76
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T232601F035684
+Saved checkpoint.
+
+--------------------[Agent Step 118_120]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.07 / train/loss/image 14.71 / train/loss/policy 4.9e-3 / train/loss/rep 2.07 / train/loss/repval 3.01 / train/loss/rew 0.02 / train/loss/value 2.27 / train/rand/action 0.93 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2091.48
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 122_040]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 1.63 / train/loss/image 13.71 / train/loss/policy 3.7e-3 / train/loss/rep 1.63 / train/loss/repval 2.55 / train/loss/rew 0.01 / train/loss/value 1.97 / train/rand/action 0.93 / replay/replay_ratio 260 / fps/policy 8.13 / fps/train 2081.18
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 125_480]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.63 / train/loss/image 13.67 / train/loss/policy 4.6e-3 / train/loss/rep 1.63 / train/loss/repval 2.91 / train/loss/rew 0.01 / train/loss/value 2.28 / train/rand/action 0.87 / replay/replay_ratio 260 / fps/policy 7.09 / fps/train 1815.43
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 129_520]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -913 / episode/length 2698 / train/loss/con 0.02 / train/loss/dyn 1.96 / train/loss/image 15.36 / train/loss/policy 2.5e-3 / train/loss/rep 1.96 / train/loss/repval 3.09 / train/loss/rew 0.02 / train/loss/value 2.46 / train/rand/action 0.87 / replay/replay_ratio 260.51 / fps/policy 8.36 / fps/train 2143.67
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 132_920]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.86 / train/loss/image 17.84 / train/loss/policy 7.6e-4 / train/loss/rep 1.86 / train/loss/repval 3.32 / train/loss/rew 0.02 / train/loss/value 2.68 / train/rand/action 0.86 / replay/replay_ratio 259.39 / fps/policy 7.04 / fps/train 1798.64
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 136_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 1.92 / train/loss/image 15.94 / train/loss/policy 2.1e-3 / train/loss/rep 1.92 / train/loss/repval 3.34 / train/loss/rew 0.02 / train/loss/value 2.71 / train/rand/action 0.78 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2149.66
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 140_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 0 / episode/length 2698 / train/loss/con 0.02 / train/loss/dyn 2.02 / train/loss/image 16.11 / train/loss/policy 3.3e-3 / train/loss/rep 2.02 / train/loss/repval 3.08 / train/loss/rew 0.02 / train/loss/value 2.49 / train/rand/action 0.79 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2130.66
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 144_400]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.38 / train/loss/image 14.51 / train/loss/policy 6.1e-3 / train/loss/rep 2.38 / train/loss/repval 2.98 / train/loss/rew 0.02 / train/loss/value 2.41 / train/rand/action 0.84 / replay/replay_ratio 260 / fps/policy 7.13 / fps/train 1825.98
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T234101F984132
+Saved checkpoint.
+
+--------------------[Agent Step 148_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.16 / train/loss/image 14.38 / train/loss/policy 4.3e-3 / train/loss/rep 2.16 / train/loss/repval 3.11 / train/loss/rew 0.02 / train/loss/value 2.54 / train/rand/action 0.84 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2092.78
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 152_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 3923 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 2.59 / train/loss/image 17.57 / train/loss/policy -9.4e-4 / train/loss/rep 2.59 / train/loss/repval 2.93 / train/loss/rew 0.03 / train/loss/value 2.36 / train/rand/action 0.82 / replay/replay_ratio 260 / fps/policy 8.27 / fps/train 2117.62
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 155_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.73 / train/loss/image 16.85 / train/loss/policy 1.1e-3 / train/loss/rep 2.73 / train/loss/repval 2.81 / train/loss/rew 0.03 / train/loss/value 2.15 / train/rand/action 0.85 / replay/replay_ratio 260 / fps/policy 7.11 / fps/train 1818.9
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 159_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.63 / train/loss/image 14.55 / train/loss/policy 7.4e-4 / train/loss/rep 2.63 / train/loss/repval 2.98 / train/loss/rew 0.04 / train/loss/value 2.34 / train/rand/action 0.85 / replay/replay_ratio 260 / fps/policy 8.29 / fps/train 2121.63
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 163_840]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 3965 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 2.69 / train/loss/image 13.74 / train/loss/policy 6e-3 / train/loss/rep 2.69 / train/loss/repval 3.03 / train/loss/rew 0.03 / train/loss/value 2.5 / train/rand/action 0.82 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2148.81
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 167_280]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.69 / train/loss/image 12.91 / train/loss/policy 0.01 / train/loss/rep 2.69 / train/loss/repval 4.12 / train/loss/rew 0.03 / train/loss/value 3.77 / train/rand/action 0.85 / replay/replay_ratio 260 / fps/policy 7.13 / fps/train 1824.16
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 171_280]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.62 / train/loss/image 11.9 / train/loss/policy 0.02 / train/loss/rep 2.62 / train/loss/repval 3.52 / train/loss/rew 0.03 / train/loss/value 3.25 / train/rand/action 0.8 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2130.99
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250511T235602F840101
+Saved checkpoint.
+
+--------------------[Agent Step 175_240]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 2.7 / train/loss/image 11.51 / train/loss/policy 7.2e-3 / train/loss/rep 2.7 / train/loss/repval 3.02 / train/loss/rew 0.03 / train/loss/value 2.61 / train/rand/action 0.77 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2092.28
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 178_640]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.74 / train/loss/image 11.4 / train/loss/policy 2.2e-3 / train/loss/rep 2.74 / train/loss/repval 3.08 / train/loss/rew 0.03 / train/loss/value 2.55 / train/rand/action 0.76 / replay/replay_ratio 260.61 / fps/policy 7.07 / fps/train 1813.97
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 182_680]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.9 / train/loss/image 11.41 / train/loss/policy 6.2e-3 / train/loss/rep 2.9 / train/loss/repval 3.05 / train/loss/rew 0.03 / train/loss/value 2.56 / train/rand/action 0.71 / replay/replay_ratio 259.49 / fps/policy 8.36 / fps/train 2135.74
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 186_720]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 2468 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 2.83 / train/loss/image 11.34 / train/loss/policy 9e-3 / train/loss/rep 2.83 / train/loss/repval 2.79 / train/loss/rew 0.03 / train/loss/value 2.33 / train/rand/action 0.68 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2149.43
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 190_120]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.91 / train/loss/image 12.13 / train/loss/policy 7.5e-3 / train/loss/rep 2.91 / train/loss/repval 2.39 / train/loss/rew 0.03 / train/loss/value 2 / train/rand/action 0.66 / replay/replay_ratio 259.39 / fps/policy 7.05 / fps/train 1799.59
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 194_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 2.85 / train/loss/image 10.76 / train/loss/policy 6.1e-3 / train/loss/rep 2.85 / train/loss/repval 2.09 / train/loss/rew 0.03 / train/loss/value 1.67 / train/rand/action 0.71 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2149.32
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 197_560]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.86 / train/loss/image 10.53 / train/loss/policy 0.01 / train/loss/rep 2.86 / train/loss/repval 2.43 / train/loss/rew 0.03 / train/loss/value 2.03 / train/rand/action 0.69 / replay/replay_ratio 259.39 / fps/policy 7.06 / fps/train 1803.69
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 201_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.94 / train/loss/image 10.56 / train/loss/policy 0.02 / train/loss/rep 2.94 / train/loss/repval 2.83 / train/loss/rew 0.03 / train/loss/value 2.43 / train/rand/action 0.65 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2150.5
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T001104F134657
+Saved checkpoint.
+
+--------------------[Agent Step 205_560]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -900 / episode/length 2692 / train/loss/con 0.02 / train/loss/dyn 2.94 / train/loss/image 10.55 / train/loss/policy 0.01 / train/loss/rep 2.94 / train/loss/repval 2.53 / train/loss/rew 0.03 / train/loss/value 2.1 / train/rand/action 0.64 / replay/replay_ratio 259.47 / fps/policy 8.18 / fps/train 2090.35
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 208_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 10.29 / train/loss/policy -9e-4 / train/loss/rep 3 / train/loss/repval 2.8 / train/loss/rew 0.03 / train/loss/value 2.06 / train/rand/action 0.66 / replay/replay_ratio 260.61 / fps/policy 7.05 / fps/train 1808.15
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 213_000]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.98 / train/loss/image 9.88 / train/loss/policy 1.3e-3 / train/loss/rep 2.98 / train/loss/repval 4.56 / train/loss/rew 0.03 / train/loss/value 3.66 / train/rand/action 0.69 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2132.66
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 216_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4187 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 3.08 / train/loss/image 10.56 / train/loss/policy 8.1e-3 / train/loss/rep 3.08 / train/loss/repval 3.88 / train/loss/rew 0.03 / train/loss/value 3.06 / train/rand/action 0.72 / replay/replay_ratio 260.53 / fps/policy 8.22 / fps/train 2109.53
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 220_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 10.03 / train/loss/policy 5.2e-3 / train/loss/rep 3 / train/loss/repval 2.58 / train/loss/rew 0.03 / train/loss/value 2.01 / train/rand/action 0.72 / replay/replay_ratio 259.39 / fps/policy 7.07 / fps/train 1805.06
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 224_400]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 9.48 / train/loss/policy 1.2e-3 / train/loss/rep 3 / train/loss/repval 3.45 / train/loss/rew 0.03 / train/loss/value 2.71 / train/rand/action 0.74 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2147.37
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 228_400]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -900 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 3.03 / train/loss/image 9.24 / train/loss/policy 6.8e-3 / train/loss/rep 3.03 / train/loss/repval 3.04 / train/loss/rew 0.03 / train/loss/value 2.45 / train/rand/action 0.73 / replay/replay_ratio 260 / fps/policy 8.31 / fps/train 2128.35
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T002604F280077
+Saved checkpoint.
+
+--------------------[Agent Step 231_760]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.06 / train/loss/image 9.06 / train/loss/policy 6.9e-3 / train/loss/rep 3.06 / train/loss/repval 2.95 / train/loss/rew 0.03 / train/loss/value 2.35 / train/rand/action 0.75 / replay/replay_ratio 260 / fps/policy 6.97 / fps/train 1783.17
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 235_760]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.07 / train/loss/image 8.87 / train/loss/policy 4.6e-3 / train/loss/rep 3.07 / train/loss/repval 3 / train/loss/rew 0.03 / train/loss/value 2.32 / train/rand/action 0.77 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2130.21
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 239_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 3943 / episode/length 2696 / train/loss/con 0.02 / train/loss/dyn 2.98 / train/loss/image 8.88 / train/loss/policy 1.8e-3 / train/loss/rep 2.98 / train/loss/repval 3.22 / train/loss/rew 0.03 / train/loss/value 2.53 / train/rand/action 0.78 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.21
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 243_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.97 / train/loss/image 8.58 / train/loss/policy 5.7e-3 / train/loss/rep 2.97 / train/loss/repval 3.54 / train/loss/rew 0.03 / train/loss/value 2.81 / train/rand/action 0.79 / replay/replay_ratio 260.61 / fps/policy 7.06 / fps/train 1810.67
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 247_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.97 / train/loss/image 9.26 / train/loss/policy 0.01 / train/loss/rep 2.97 / train/loss/repval 4.35 / train/loss/rew 0.03 / train/loss/value 3.51 / train/rand/action 0.88 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2129.39
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 251_240]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 3884 / episode/length 2694 / train/loss/con 0.02 / train/loss/dyn 3.15 / train/loss/image 9.8 / train/loss/policy 0.05 / train/loss/rep 3.15 / train/loss/repval 4.7 / train/loss/rew 0.03 / train/loss/value 3.93 / train/rand/action 0.7 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.18
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 254_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 9.62 / train/loss/policy 0.02 / train/loss/rep 3 / train/loss/repval 3.12 / train/loss/rew 0.03 / train/loss/value 2.41 / train/rand/action 0.57 / replay/replay_ratio 260 / fps/policy 6.97 / fps/train 1784.21
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 258_640]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.01 / train/loss/image 9.36 / train/loss/policy -2.3e-3 / train/loss/rep 3.01 / train/loss/repval 3.77 / train/loss/rew 0.03 / train/loss/value 2.58 / train/rand/action 0.66 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2148.67
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T004105F589310
+Saved checkpoint.
+
+--------------------[Agent Step 262_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 3623 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 3.07 / train/loss/image 10.01 / train/loss/policy 0.01 / train/loss/rep 3.07 / train/loss/repval 4.56 / train/loss/rew 0.03 / train/loss/value 3.44 / train/rand/action 0.72 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2092.51
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 265_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.96 / train/loss/image 8.94 / train/loss/policy 0.04 / train/loss/rep 2.96 / train/loss/repval 3.78 / train/loss/rew 0.03 / train/loss/value 2.96 / train/rand/action 0.72 / replay/replay_ratio 260 / fps/policy 7 / fps/train 1791.95
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 270_000]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4380 / episode/length 2692 / train/loss/con 0.02 / train/loss/dyn 2.99 / train/loss/image 8.1 / train/loss/policy 0.05 / train/loss/rep 2.99 / train/loss/repval 3.96 / train/loss/rew 0.03 / train/loss/value 3.16 / train/rand/action 0.58 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2148.78
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 273_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.92 / train/loss/image 8.03 / train/loss/policy -1e-3 / train/loss/rep 2.92 / train/loss/repval 3.71 / train/loss/rew 0.03 / train/loss/value 2.66 / train/rand/action 0.62 / replay/replay_ratio 260 / fps/policy 6.99 / fps/train 1790.03
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 277_400]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 8.21 / train/loss/policy 0.01 / train/loss/rep 3 / train/loss/repval 4.67 / train/loss/rew 0.03 / train/loss/value 3.76 / train/rand/action 0.73 / replay/replay_ratio 259.49 / fps/policy 8.36 / fps/train 2135.25
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 281_440]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4000 / episode/length 2697 / train/loss/con 0.02 / train/loss/dyn 2.97 / train/loss/image 7.77 / train/loss/policy 9.9e-3 / train/loss/rep 2.97 / train/loss/repval 3.88 / train/loss/rew 0.03 / train/loss/value 3.12 / train/rand/action 0.78 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2147.33
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 284_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.03 / train/loss/image 8.37 / train/loss/policy 0.02 / train/loss/rep 3.03 / train/loss/repval 4.54 / train/loss/rew 0.03 / train/loss/value 3.82 / train/rand/action 0.74 / replay/replay_ratio 260 / fps/policy 6.98 / fps/train 1786.44
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T005606F310763
+Saved checkpoint.
+
+--------------------[Agent Step 288_760]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.28 / train/loss/image 8.61 / train/loss/policy 0.04 / train/loss/rep 3.28 / train/loss/repval 3.61 / train/loss/rew 0.03 / train/loss/value 2.92 / train/rand/action 0.58 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2093.2
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 292_760]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -700 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 2.99 / train/loss/image 8.09 / train/loss/policy 8.2e-3 / train/loss/rep 2.99 / train/loss/repval 2.56 / train/loss/rew 0.02 / train/loss/value 2.02 / train/rand/action 0.57 / replay/replay_ratio 260 / fps/policy 8.26 / fps/train 2115.72
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 296_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3 / train/loss/image 7.79 / train/loss/policy -9.4e-3 / train/loss/rep 3 / train/loss/repval 4.05 / train/loss/rew 0.03 / train/loss/value 2.97 / train/rand/action 0.73 / replay/replay_ratio 260 / fps/policy 7.1 / fps/train 1817.66
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 300_240]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.96 / train/loss/image 7.48 / train/loss/policy 9.9e-3 / train/loss/rep 2.96 / train/loss/repval 4.47 / train/loss/rew 0.03 / train/loss/value 3.68 / train/rand/action 0.83 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2146.54
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 304_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4915 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 2.93 / train/loss/image 7.59 / train/loss/policy 0.02 / train/loss/rep 2.93 / train/loss/repval 4.02 / train/loss/rew 0.02 / train/loss/value 3.33 / train/rand/action 0.8 / replay/replay_ratio 259.47 / fps/policy 8.21 / fps/train 2098.39
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 307_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.02 / train/loss/image 8.04 / train/loss/policy 0.02 / train/loss/rep 3.02 / train/loss/repval 3.84 / train/loss/rew 0.03 / train/loss/value 3.08 / train/rand/action 0.67 / replay/replay_ratio 260.61 / fps/policy 7.08 / fps/train 1816.32
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 311_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.87 / train/loss/image 7.28 / train/loss/policy 0.02 / train/loss/rep 2.87 / train/loss/repval 2.85 / train/loss/rew 0.03 / train/loss/value 2.25 / train/rand/action 0.57 / replay/replay_ratio 260 / fps/policy 8.33 / fps/train 2131.36
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 315_640]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4893 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 2.9 / train/loss/image 7.1 / train/loss/policy 3.3e-4 / train/loss/rep 2.9 / train/loss/repval 3.06 / train/loss/rew 0.02 / train/loss/value 2.3 / train/rand/action 0.64 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.62
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T011106F692693
+Saved checkpoint.
+
+--------------------[Agent Step 318_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.88 / train/loss/image 7.02 / train/loss/policy 2.4e-3 / train/loss/rep 2.88 / train/loss/repval 5.08 / train/loss/rew 0.02 / train/loss/value 4.05 / train/rand/action 0.79 / replay/replay_ratio 260.63 / fps/policy 6.89 / fps/train 1769.06
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 322_960]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.99 / train/loss/image 7.29 / train/loss/policy 0.02 / train/loss/rep 2.99 / train/loss/repval 4.24 / train/loss/rew 0.02 / train/loss/value 3.61 / train/rand/action 0.73 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2130.21
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 327_000]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4000 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 2.97 / train/loss/image 6.74 / train/loss/policy 0.01 / train/loss/rep 2.97 / train/loss/repval 4.12 / train/loss/rew 0.02 / train/loss/value 3.4 / train/rand/action 0.77 / replay/replay_ratio 259.49 / fps/policy 8.34 / fps/train 2131.87
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 330_360]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.99 / train/loss/image 6.82 / train/loss/policy 0.02 / train/loss/rep 2.99 / train/loss/repval 3.96 / train/loss/rew 0.02 / train/loss/value 3.24 / train/rand/action 0.71 / replay/replay_ratio 260 / fps/policy 6.99 / fps/train 1789.23
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 334_400]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4000 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 2.95 / train/loss/image 6.75 / train/loss/policy 0.02 / train/loss/rep 2.95 / train/loss/repval 3.48 / train/loss/rew 0.02 / train/loss/value 2.92 / train/rand/action 0.61 / replay/replay_ratio 260.51 / fps/policy 8.37 / fps/train 2147.54
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 337_840]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 2.99 / train/loss/image 6.46 / train/loss/policy 6e-3 / train/loss/rep 2.99 / train/loss/repval 3.73 / train/loss/rew 0.02 / train/loss/value 2.92 / train/rand/action 0.67 / replay/replay_ratio 260 / fps/policy 7.13 / fps/train 1825.18
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 341_840]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.06 / train/loss/image 6.13 / train/loss/policy 0.02 / train/loss/rep 3.06 / train/loss/repval 4.26 / train/loss/rew 0.02 / train/loss/value 3.46 / train/rand/action 0.78 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2129.34
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T012607F718660
+Saved checkpoint.
+
+--------------------[Agent Step 345_800]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4100 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 3.2 / train/loss/image 6.54 / train/loss/policy 0.01 / train/loss/rep 3.2 / train/loss/repval 4.19 / train/loss/rew 0.02 / train/loss/value 3.39 / train/rand/action 0.81 / replay/replay_ratio 259.47 / fps/policy 8.19 / fps/train 2093.14
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 349_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.07 / train/loss/image 5.99 / train/loss/policy 0.02 / train/loss/rep 3.07 / train/loss/repval 4.31 / train/loss/rew 0.02 / train/loss/value 3.59 / train/rand/action 0.77 / replay/replay_ratio 260 / fps/policy 6.98 / fps/train 1788.08
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 353_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.22 / train/loss/image 6.28 / train/loss/policy 0.03 / train/loss/rep 3.22 / train/loss/repval 4.15 / train/loss/rew 0.02 / train/loss/value 3.47 / train/rand/action 0.64 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2150.46
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 357_240]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -40 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 3.07 / train/loss/image 5.71 / train/loss/policy 0.03 / train/loss/rep 3.07 / train/loss/repval 3.22 / train/loss/rew 0.02 / train/loss/value 2.61 / train/rand/action 0.48 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2133.3
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 360_600]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.12 / train/loss/image 5.74 / train/loss/policy 9.7e-3 / train/loss/rep 3.12 / train/loss/repval 2.4 / train/loss/rew 0.02 / train/loss/value 1.8 / train/rand/action 0.54 / replay/replay_ratio 260 / fps/policy 6.96 / fps/train 1781.58
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 364_640]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.35 / train/loss/image 6.05 / train/loss/policy -0.01 / train/loss/rep 3.35 / train/loss/repval 3.14 / train/loss/rew 0.02 / train/loss/value 1.97 / train/rand/action 0.67 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2149.4
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 368_640]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score -400 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 3.17 / train/loss/image 5.51 / train/loss/policy 4.8e-3 / train/loss/rep 3.17 / train/loss/repval 4.1 / train/loss/rew 0.02 / train/loss/value 2.91 / train/rand/action 0.67 / replay/replay_ratio 260 / fps/policy 8.27 / fps/train 2117.98
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 372_080]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.17 / train/loss/image 5.41 / train/loss/policy 0.03 / train/loss/rep 3.17 / train/loss/repval 3.69 / train/loss/rew 0.02 / train/loss/value 3.13 / train/rand/action 0.71 / replay/replay_ratio 260 / fps/policy 7.11 / fps/train 1821.05
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T014108F768411
+Saved checkpoint.
+
+--------------------[Agent Step 376_040]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.28 / train/loss/image 5.65 / train/loss/policy 0.02 / train/loss/rep 3.28 / train/loss/repval 3.25 / train/loss/rew 0.02 / train/loss/value 2.58 / train/rand/action 0.72 / replay/replay_ratio 259.47 / fps/policy 8.2 / fps/train 2093.98
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 380_040]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4040 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 3.05 / train/loss/image 5.34 / train/loss/policy 0.02 / train/loss/rep 3.05 / train/loss/repval 3.16 / train/loss/rew 0.02 / train/loss/value 2.44 / train/rand/action 0.61 / replay/replay_ratio 260 / fps/policy 8.28 / fps/train 2120.9
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 383_440]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.09 / train/loss/image 5.24 / train/loss/policy 5.3e-3 / train/loss/rep 3.09 / train/loss/repval 2.92 / train/loss/rew 0.02 / train/loss/value 2.19 / train/rand/action 0.64 / replay/replay_ratio 260.61 / fps/policy 7.08 / fps/train 1815.7
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 387_440]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.15 / train/loss/image 5.02 / train/loss/policy 9.5e-3 / train/loss/rep 3.15 / train/loss/repval 4.34 / train/loss/rew 0.02 / train/loss/value 3.31 / train/rand/action 0.75 / replay/replay_ratio 260 / fps/policy 8.33 / fps/train 2132.37
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 391_480]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4619 / episode/length 2695 / train/loss/con 0.02 / train/loss/dyn 3.18 / train/loss/image 5.08 / train/loss/policy 0.03 / train/loss/rep 3.18 / train/loss/repval 3.85 / train/loss/rew 0.02 / train/loss/value 3.3 / train/rand/action 0.73 / replay/replay_ratio 259.49 / fps/policy 8.36 / fps/train 2135.41
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 394_880]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.02 / train/loss/image 4.72 / train/loss/policy 0.02 / train/loss/rep 3.02 / train/loss/repval 3.03 / train/loss/rew 0.02 / train/loss/value 2.4 / train/rand/action 0.75 / replay/replay_ratio 260.61 / fps/policy 7.06 / fps/train 1812.05
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 398_880]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 100 / episode/length 2691 / train/loss/con 0.02 / train/loss/dyn 3.06 / train/loss/image 4.69 / train/loss/policy 0.01 / train/loss/rep 3.06 / train/loss/repval 3.07 / train/loss/rew 0.02 / train/loss/value 2.32 / train/rand/action 0.74 / replay/replay_ratio 260 / fps/policy 8.32 / fps/train 2128.83
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T015609F492085
+Saved checkpoint.
+
+--------------------[Agent Step 402_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.06 / train/loss/image 4.69 / train/loss/policy 0.02 / train/loss/rep 3.06 / train/loss/repval 3.12 / train/loss/rew 0.02 / train/loss/value 2.44 / train/rand/action 0.71 / replay/replay_ratio 259.37 / fps/policy 6.91 / fps/train 1764.58
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 406_200]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.1 / train/loss/image 4.6 / train/loss/policy 0.03 / train/loss/rep 3.1 / train/loss/repval 3.29 / train/loss/rew 0.02 / train/loss/value 2.57 / train/rand/action 0.66 / replay/replay_ratio 260 / fps/policy 8.29 / fps/train 2122.48
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 410_240]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4059 / episode/length 2697 / train/loss/con 0.02 / train/loss/dyn 3.16 / train/loss/image 4.6 / train/loss/policy 5.5e-3 / train/loss/rep 3.16 / train/loss/repval 3.01 / train/loss/rew 0.02 / train/loss/value 2.28 / train/rand/action 0.68 / replay/replay_ratio 260.51 / fps/policy 8.38 / fps/train 2148.8
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 413_680]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.21 / train/loss/image 4.55 / train/loss/policy 0.02 / train/loss/rep 3.21 / train/loss/repval 4.01 / train/loss/rew 0.02 / train/loss/value 2.88 / train/rand/action 0.75 / replay/replay_ratio 260 / fps/policy 7.11 / fps/train 1820.29
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 417_680]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.31 / train/loss/image 4.71 / train/loss/policy 0.02 / train/loss/rep 3.31 / train/loss/repval 3.29 / train/loss/rew 0.02 / train/loss/value 2.51 / train/rand/action 0.67 / replay/replay_ratio 260 / fps/policy 8.33 / fps/train 2132.26
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+
+--------------------[Agent Step 421_720]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4775 / episode/length 2693 / train/loss/con 0.02 / train/loss/dyn 3.22 / train/loss/image 4.76 / train/loss/policy 0.01 / train/loss/rep 3.22 / train/loss/repval 3.26 / train/loss/rew 0.02 / train/loss/value 2.57 / train/rand/action 0.69 / replay/replay_ratio 259.49 / fps/policy 8.35 / fps/train 2134.22
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+
+--------------------[Agent Step 425_120]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.03 / train/loss/image 4.69 / train/loss/policy 0.02 / train/loss/rep 3.03 / train/loss/repval 3.39 / train/loss/rew 0.01 / train/loss/value 2.66 / train/rand/action 0.68 / replay/replay_ratio 260.61 / fps/policy 7.03 / fps/train 1804.76
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 429_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.13 / train/loss/image 5.84 / train/loss/policy 0.02 / train/loss/rep 3.13 / train/loss/repval 2.81 / train/loss/rew 0.02 / train/loss/value 2.23 / train/rand/action 0.66 / replay/replay_ratio 259.49 / fps/policy 8.36 / fps/train 2136.45
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+Saving checkpoint: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/ckpt/20250512T021110F634500
+Saved checkpoint.
+
+--------------------[Agent Step 433_120]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+episode/score 4000 / episode/length 2694 / train/loss/con 0.02 / train/loss/dyn 3.1 / train/loss/image 5.33 / train/loss/policy -3.2e-3 / train/loss/rep 3.1 / train/loss/repval 2.92 / train/loss/rew 0.02 / train/loss/value 2.05 / train/rand/action 0.7 / replay/replay_ratio 260.53 / fps/policy 8.21 / fps/train 2106.41
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+
+--------------------[Agent Step 436_520]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+train/loss/con 0.02 / train/loss/dyn 3.05 / train/loss/image 4.81 / train/loss/policy -1.8e-3 / train/loss/rep 3.05 / train/loss/repval 4.44 / train/loss/rew 0.02 / train/loss/value 3.2 / train/rand/action 0.76 / replay/replay_ratio 259.39 / fps/policy 7.03 / fps/train 1794.4
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonl
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+--------------------[Agent Step 439_160]--------------------
+Metrics filtered by: 'score|length|fps|ratio|train/loss/|train/rand/'
+No metrics.
+
+Writing metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/scores.jsonlWriting metrics: /home/scur2667/logdir/rssmv2/atari100k_private_eye/dyn/2/20250511T222428/metrics.jsonl
+
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mdyn_L4_H8/rssmv2/atari100k_private_eye/dyn/2/20250511T222428[0m at: [34mhttps://wandb.ai/dreamerz/rssmv2/runs/h3zqq6i7[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20250511_222550-h3zqq6i7/logs[0m
+
+JOB STATISTICS
+==============
+Job ID: 11765011
+Cluster: snellius
+User/Group: scur2667/scur2667
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 01:11:30
+CPU Efficiency: 1.71% of 2-21:48:00 core-walltime
+Job Wall-clock time: 03:52:40
+Memory Utilized: 8.05 GB
+Memory Efficiency: 25.77% of 31.25 GB (31.25 GB/node)
