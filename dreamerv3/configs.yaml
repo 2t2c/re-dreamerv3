@@ -20,6 +20,7 @@ defaults:
   clock_port: ''
   ipv6: False
   errfile: False
+  wandb_project: default
 
   logger:
     outputs: [jsonl, scope, wandb]
@@ -197,6 +198,14 @@ dmc_vision:
     steps: 0.51e6 # Table 2 Env Steps = 1M. But this param defines Agent steps = Env Steps / Action Repeat.
     train_ratio: 512
     envs: 16
+
+dmc_proprio_walker_run:
+  <<: *size12m
+  task: dmc_walker_run
+  env.dmc.image: True
+  env.dmc.repeat: 2
+  run: {envs: 16, steps: 2.5e5, train_ratio: 512}
+  wandb_project: dmc_proprio_walker_run
 
 bsuite:
   task: bsuite_mnist/0

@@ -31,5 +31,6 @@ dependencies:
       - scope>=0.4.4
       - tqdm
       - wandb
+      - wandb[media]
       - moviepy==2.1.2
       - pandas
