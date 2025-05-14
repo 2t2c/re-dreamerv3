@@ -1,3 +1,6 @@
+import argparse
+import sys
+
 import concurrent.futures
 import functools
 import json
@@ -256,7 +259,7 @@ def plot_runs(df, stats, args):
 
   outdir = elements.Path(args.outdir) / elements.Path(args.indirs[0]).stem
   outdir.mkdir()
-  filename = outdir / 'curves.png'
+  filename = outdir / args.filename
   fig.savefig(filename, dpi=300)
   print('Saved', filename)
 
@@ -398,7 +401,6 @@ def main(args):
   print_summary(df)
   if args.todf:
     assert args.todf.endswith('.json.gz')
-    import ipdb; ipdb.set_trace()
     df.to_json(args.todf, orient='records')
     print(f'Saved {args.todf}')
   stats = comp_stats(df, args)
@@ -406,7 +408,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-  main(elements.Flags(
+  
+  default_args = dict(
       pattern='**/scores.jsonl',
       indirs=['../logdir/re-dreamerv3',
               '../logdir/original'],
@@ -431,4 +434,22 @@ if __name__ == '__main__':
       stats=['none'],
       agg=True,
       todf='',
-  ).parse())
+      filename='curves.png',
+  )
+  
+  if len(sys.argv) <= 1:
+      main(elements.Flags(**default_args).parse())
+      sys.exit(0)
+  
+  parser = argparse.ArgumentParser(description='Plot experiment results')
+  parser.add_argument('--methods', type=str, default=default_args['methods'],
+                     help='Regex pattern for methods to include (default: %(default)s)')
+  parser.add_argument('--filename', type=str, default=default_args['filename'],
+                     help='Output filename (default: %(default)s)')
+  
+  cmd_args = parser.parse_args()
+  
+  for arg in vars(cmd_args):
+      default_args[arg] = getattr(cmd_args, arg)
+  
+  main(elements.Flags(**default_args).parse())
