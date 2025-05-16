@@ -151,7 +151,7 @@ class Agent(embodied.jax.Agent):
         metrics, (carry, entries, outs, mets) = self.opt(
             self.loss, carry, obs, prevact, training=True, has_aux=True)
         wm_loss = mets.pop('wm_loss', None) # otherwise logging complains
-        metrics.update(mets)
+        metrics.update(mets) # logging
         self.slowval.update()
         outs = {}
 
@@ -165,8 +165,8 @@ class Agent(embodied.jax.Agent):
                 dec=entries[2],
                 ))
             
-            # TODO: if self.config.replay.fracs.curio > 0:
-            updates['priority'] = wm_loss # [batch, time]; used as a priority signal in Curious Replay
+            if self.config.replay_fracs.curious > 0:
+                updates['priority'] = wm_loss # [batch, time]; used as a priority signal in Curious Replay
             B, T = obs['is_first'].shape
             assert all(x.shape[:2] == (B, T) for x in updates.values()), (
                 (B, T), {k: v.shape for k, v in updates.items()})
@@ -294,13 +294,13 @@ class Agent(embodied.jax.Agent):
         entries = (enc_entries, dyn_entries, dec_entries)
         outs = {'tokens': tokens, 'repfeat': repfeat, 'losses': losses}
 
-        # Compute world model loss
-        # TODO: if curious replay on
-        wm_loss = sum(
-            self.scales[k] * losses[k]
-            for k in self.wm_keys
-        )
-        metrics['wm_loss'] = wm_loss # Hacky way to pass wm_loss per step to train()
+        if self.config.replay_fracs.curious > 0:
+            # Compute world model loss per step
+            wm_loss = sum(
+                self.scales[k] * losses[k]
+                for k in self.wm_keys
+            )
+            metrics['wm_loss'] = wm_loss # Hacky way to pass wm_loss per step to train()
 
         return loss, (carry, entries, outs, metrics)
 

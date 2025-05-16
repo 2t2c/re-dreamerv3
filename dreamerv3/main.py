@@ -177,6 +177,7 @@ def make_agent(config: elements.Config) -> embodied.Agent:
         report_length=config.report_length,
         replica=config.replica,
         replicas=config.replicas,
+        replay_fracs=config.replay.fracs
     ))
 
 
@@ -250,7 +251,7 @@ def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> em
             'outputs that are incompatible with prioritized replay.')
         recency = 1.0 / np.arange(1, capacity + 1) ** config.replay.recexp
         selectors = embodied.replay.selectors
-        kwargs['selector'] = selectors.Curious(**config.replay.curious)
+        kwargs['selector'] = selectors.Curious(seed=config.seed, **config.replay.curious)
         # kwargs['selector'] = selectors.Mixture(dict(
         #     uniform=selectors.Uniform(),
         #     priority=selectors.Prioritized(**config.replay.prio),
