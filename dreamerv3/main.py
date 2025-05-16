@@ -250,7 +250,7 @@ def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> em
             'outputs that are incompatible with prioritized replay.')
         recency = 1.0 / np.arange(1, capacity + 1) ** config.replay.recexp
         selectors = embodied.replay.selectors
-        kwargs['selector'] = selectors.Curious(**config.replay.curio)
+        kwargs['selector'] = selectors.Curious(**config.replay.curious)
         # kwargs['selector'] = selectors.Mixture(dict(
         #     uniform=selectors.Uniform(),
         #     priority=selectors.Prioritized(**config.replay.prio),
