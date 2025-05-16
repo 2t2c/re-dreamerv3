@@ -290,29 +290,18 @@ class Prioritized:
 
 class Curious:
 
-  def __init__(
-      self,           
-      alpha=1.0,
-      beta=0.99,
-      c=0.1,
-      epsilon=1e-6,
-      mix=0.05,          
-      exponent=1.0,      
-      initial=1.0,
-      branching=16,
-      seed=0):
-
+  def __init__(self, alpha, beta, c, epsilon, branching=16, seed=0):
     self.alpha   = float(alpha)
     self.beta    = float(beta)
     self.c       = float(c)
     self.eps     = float(epsilon)
-    self.mix     = float(mix)
-
-    self.exponent = float(exponent)
-    self.initial  = float(initial)
+    assert alpha == 0.7, alpha
+    assert beta == 0.7, beta
+    assert c == 1e4, c
+    assert epsilon == 0.1, epsilon
 
     self.tree  = SampleTree(branching, seed)
-    self.prios = collections.defaultdict(lambda: self.initial)
+    self.prios = collections.defaultdict(int)
     self.visit = collections.defaultdict(int)
     self.stepitems = collections.defaultdict(list)
     self.items = {}
@@ -327,18 +316,25 @@ class Curious:
 
     for sid, loss in zip(stepids, losses):
       v = self.visit[sid]
-      # https://github.com/AutonomousAgentsLab/cr-dv3/blob/main/dreamerv3/embodied/replay/curious_replay.py#L13
-      prio = (self.c * (self.beta ** v)
-              + (float(loss) + self.eps) ** self.alpha)
-      self.prios[sid] = prio
-      self.visit[sid] = v + 1
+      try:
+        # https://github.com/AutonomousAgentsLab/cr-dv3/blob/main/dreamerv3/embodied/replay/curious_replay.py#L13
+        adversarial_priority = (float(loss) + self.eps) ** self.alpha
+        count_based_priority = self.c * (self.beta ** v)
+        self.prios[sid] = adversarial_priority + count_based_priority
+
+        self.visit[sid] = v + 1
+      except KeyError:
+        print('Ignoring pirority update for removed timestep.')
 
     # Recompute item-level priorities in the sum-tree
     keys = []
     for sid in stepids:
       keys += self.stepitems.get(sid, [])
     for key in set(keys):
-      self.tree.update(key, self._aggregate(key))
+      try:
+        self.tree.update(key, self._aggregate(key))
+      except KeyError:
+        print('Ignoring tree update for remoed timestep')
 
   def __len__(self):
     return len(self.items)
@@ -367,12 +363,7 @@ class Curious:
 
   def _aggregate(self, key):
     prios = [self.prios[sid] for sid in self.items[key]]
-    if self.exponent != 1.0:
-      prios = [p ** self.exponent for p in prios]
     mean = sum(prios) / len(prios)
-    if self.mix:
-      # Blend with uniform mass to avoid zero-probability items
-      mean = (1 - self.mix) * mean + self.mix * (sum(self.prios.values()) / len(self.prios))
     return mean
 
 
