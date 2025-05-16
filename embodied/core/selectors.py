@@ -126,21 +126,80 @@ class Recency:
 
 
 class Prioritized:
+  """
+  A sampling buffer that prioritizes some data over others for more frequent use,
+  based on a learnable notion of importance (priority). Used in reinforcement learning
+  to focus training on more informative or surprising experiences.
 
+  Each sampleable item (e.g., a chunk of experience) is associated with one or more
+  step IDs (e.g., individual timesteps). Priorities are assigned to step IDs,
+  and each item's sampling probability is based on the aggregate of its step priorities.
+
+  Args:
+    exponent (float):
+      Controls how strongly prioritization affects sampling.
+      - A higher value makes the system favor high-priority items more aggressively.
+      - An exponent of 0 means uniform sampling (all priorities are treated equally).
+    
+    initial (float):
+      Default priority for new step IDs before a learning signal is assigned.
+      Ensures newly added real-world experience is sampleable immediately,
+      even if prioritization hasn't been applied yet. Useful as a fallback
+      during delays in priority computation or for exploration bias.
+ 
+    zero_on_sample (bool):
+      Whether to reset the priorities of a sampled item's step IDs to zero.
+      - Useful to prevent the same item from being repeatedly sampled before its priority is updated.
+    
+    maxfrac (float):
+      A blend factor between the max and mean of step priorities within an item.
+      - If 0, use the mean priority (less skewed, more stable).
+      - If 1, use the max priority (focuses on most important part of item).
+      - Intermediate values provide a balance between stability and reactivity.
+    
+    branching (int):
+      The branching factor of the internal SampleTree data structure.
+      - Affects performance: higher branching can reduce tree depth and speed up sampling.
+    
+    seed (int):
+      Random seed for the sampler to ensure reproducibility.
+  """
   def __init__(
-      self, exponent=1.0, initial=1.0, zero_on_sample=False,
-      maxfrac=0.0, branching=16, seed=0):
+      self, 
+      exponent=1.0, 
+      initial=1.0, 
+      zero_on_sample=False,
+      maxfrac=0.0, 
+      branching=16, 
+      seed=0
+      ):
     assert 0 <= maxfrac <= 1, maxfrac
     self.exponent = float(exponent)
     self.initial = float(initial)
     self.zero_on_sample = zero_on_sample
     self.maxfrac = maxfrac
     self.tree = SampleTree(branching, seed)
+
+    # Stores the priority of each step ID. New step IDs default to `initial`.  
+    # Used to compute the importance of full samples made up of these steps.
     self.prios = collections.defaultdict(lambda: self.initial)
-    self.stepitems = collections.defaultdict(list)
-    self.items = {}
+
+    # Maps each step ID to all sample keys (items) that include it.  
+    # Enables efficient updates when a step's priority changes.
+    self.stepitems = collections.defaultdict(list)             
+
+    # Maps each sample key to the list of step IDs it contains.  
+    # Defines the content of what gets sampled (e.g., a sequence of steps).
+    self.items = {}                                           
 
   def prioritize(self, stepids, priorities):
+    """
+    Update priorities of the provided step IDs and propagate changes to their associated keys.
+
+    Args:
+      stepids (list): List of step IDs (can be numpy arrays or bytes).
+      priorities (list): Corresponding list of priority values.
+    """
     if not isinstance(stepids[0], bytes):
       stepids = [x.tobytes() for x in stepids]
     for stepid, priority in zip(stepids, priorities):
@@ -158,9 +217,16 @@ class Prioritized:
         print('Ignoring tree update for removed time step.')
 
   def __len__(self):
+    """Returns the number of sampleable keys currently stored."""
     return len(self.items)
 
   def __call__(self):
+    """
+    Samples a key from the tree based on current priorities.
+
+    Returns:
+      key: The sampled key.
+    """
     key = self.tree.sample()
     if self.zero_on_sample:
       zeros = [0.0] * len(self.items[key])
@@ -168,6 +234,13 @@ class Prioritized:
     return key
 
   def __setitem__(self, key, stepids):
+    """
+    Adds a new key with associated step IDs to the prioritization system.
+
+    Args:
+      key: Identifier for the sampleable item (e.g., chunk ID).
+      stepids (list): List of step IDs (numpy arrays or bytes) that belong to the key.
+    """
     if not isinstance(stepids[0], bytes):
       stepids = [x.tobytes() for x in stepids]
     self.items[key] = stepids
@@ -175,6 +248,12 @@ class Prioritized:
     self.tree.insert(key, self._aggregate(key))
 
   def __delitem__(self, key):
+    """
+    Removes a key and its associations from the tree and internal mappings.
+
+    Args:
+      key: Identifier of the item to be removed.
+    """
     self.tree.remove(key)
     stepids = self.items.pop(key)
     for stepid in stepids:
@@ -185,6 +264,19 @@ class Prioritized:
         del self.prios[stepid]
 
   def _aggregate(self, key):
+    """
+    Computes the aggregated priority of a key from its associated step IDs.
+
+    This method supports:
+      - Priority exponentiation for control over skewness.
+      - Optional blending of mean and max priority.
+
+    Args:
+      key: The key whose priority is being aggregated.
+
+    Returns:
+      float: The aggregated priority value.
+    """
     # Both list comprehensions in this function are a performance bottleneck
     # because they are called very often.
     prios = [self.prios[stepid] for stepid in self.items[key]]
