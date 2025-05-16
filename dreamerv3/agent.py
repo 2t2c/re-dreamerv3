@@ -91,6 +91,15 @@ class Agent(embodied.jax.Agent):
         scales.update({k: rec for k in dec_space})
         self.scales = scales
 
+        # define which keys belong to the world‐model loss
+        self.wm_keys = {
+            'dyn', 'rep',           # KL terms
+            'rew', 'con',           # reward & continuation
+            'image', 'vector',      # observation reconstructions
+            'token', 'count',
+            'float2d', 'int2d'
+        }
+
     @property
     def policy_keys(self):
         return '^(enc|dyn|dec|pol)/'
@@ -150,15 +159,26 @@ class Agent(embodied.jax.Agent):
         metrics.update(mets)
         self.slowval.update()
         outs = {}
+
+        # Package step IDs and latent states for replay-context so the buffer can restore model context on sampling
+        # If replay prioritization is used, packages the necessary signals as well.
+        print("Replay_context", self.config.replay_context)
         if self.config.replay_context:
+            print("In")
             updates = elements.tree.flatdict(dict(
-                stepid=stepid, enc=entries[0], dyn=entries[1], dec=entries[2]))
+                stepid=stepid,  # [batch, time, bytes]; used to update priorities 
+                enc=entries[0],
+                dyn=entries[1],
+                dec=entries[2],
+                ))
+            
+            # TODO: if self.config.replay.fracs.curio > 0:
+            # updates['wm_loss'] = mets['wm_loss'] # [batch, time]; used as a priority signal in Curious Replay
+            # mets.pop('wm_loss') # otherwise logging complains
             B, T = obs['is_first'].shape
             assert all(x.shape[:2] == (B, T) for x in updates.values()), (
                 (B, T), {k: v.shape for k, v in updates.items()})
             outs['replay'] = updates
-        # if self.config.replay.fracs.priority > 0:
-        #   outs['replay']['priority'] = losses['model']
         carry = (*carry, {k: data[k][:, -1] for k in self.act_space})
         return carry, outs, metrics
 
@@ -169,6 +189,36 @@ class Agent(embodied.jax.Agent):
         losses = {}
         metrics = {}
 
+        """
+        World Model Loss (DreamerV3)
+
+        The world model loss is composed of three parts, each producing a
+        [batch, time] loss tensor that is weighted by `self.scales`:
+
+        1. Dynamics KL Loss
+           - Key: 'dyn'
+           - Encourages the model's predicted next state to match the state
+             inferred from the actual observation.
+
+        2. Representation KL Loss
+           - Key: 'rep'
+           - Keeps the latent representation rich and informative, preventing
+             it from collapsing and ensuring it captures important details
+             from the observations.
+
+        3. Prediction Loss
+           a) Observation reconstruction heads:
+              - 'image'   : pixel-wise reconstruction
+              - 'vector'  : numeric feature reconstruction
+              - 'token'   : discrete token reconstruction
+              - 'count'   : count-type observation reconstruction
+              - 'float2d' : 2D float-array reconstruction
+              - 'int2d'   : 2D int-array reconstruction
+           b) Reward prediction:
+              - Key: 'rew'
+           c) Continuation (non-terminal) prediction:
+              - Key: 'con'
+        """
         # World model
         enc_carry, enc_entries, tokens = self.enc(
             enc_carry, obs, reset, training)
@@ -251,6 +301,15 @@ class Agent(embodied.jax.Agent):
         carry = (enc_carry, dyn_carry, dec_carry)
         entries = (enc_entries, dyn_entries, dec_entries)
         outs = {'tokens': tokens, 'repfeat': repfeat, 'losses': losses}
+
+        # Compute world model loss
+        # TODO: if curious replay on
+        wm_loss = sum(
+            self.scales[k] * losses[k]
+            for k in self.wm_keys
+        )
+        metrics['wm_loss'] = wm_loss # Hacky way to pass wm_loss per step to train()
+
         return loss, (carry, entries, outs, metrics)
 
     def report(self, carry, data):
