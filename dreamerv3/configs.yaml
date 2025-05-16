@@ -20,6 +20,7 @@ defaults:
   clock_port: ''
   ipv6: False
   errfile: False
+  wandb_project: default
 
   logger:
     outputs: [jsonl, scope, wandb]
@@ -93,7 +94,7 @@ defaults:
     ac_grads: False
     dyn:
       typ: rssm
-      rssm: {deter: 8192, hidden: 1024, stoch: 32, classes: 64, act: silu, norm: rms, unimix: 0.01, outscale: 1.0, winit: trunc_normal_in, imglayers: 2, obslayers: 1, dynlayers: 1, absolute: False, blocks: 8, free_nats: 1.0}
+      rssm: {deter: 8192, hidden: 1024, stoch: 32, classes: 64, act: silu, norm: rms, unimix: 0.01, adaptive_unimix: True, outscale: 1.0, winit: trunc_normal_in, imglayers: 2, obslayers: 1, dynlayers: 1, absolute: False, blocks: 8, free_nats: 1.0}
     enc:
       typ: simple
       simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, winit: trunc_normal_in, symlog: True, outer: False, kernel: 5, strided: False}
@@ -198,6 +199,14 @@ dmc_vision:
     steps: 0.51e6 # Table 2 Env Steps = 1M. But this param defines Agent steps = Env Steps / Action Repeat.
     train_ratio: 512
     envs: 16
+
+dmc_proprio_walker_run:
+  <<: *size12m
+  task: dmc_walker_run
+  env.dmc.image: True
+  env.dmc.repeat: 2
+  run: {envs: 16, steps: 2.5e5, train_ratio: 512}
+  wandb_project: dmc_proprio_walker_run
 
 bsuite:
   task: bsuite_mnist/0

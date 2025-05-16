@@ -22,6 +22,7 @@ class RSSM(nj.Module):
     act: str = 'gelu'  # activation function
     unroll: bool = False  # whether to use scanning for unrolling time
     unimix: float = 0.01  # uniform mixing for discrete distributions
+    adaptive_unimix: bool = False  # whether to adaptively mix unimix
     outscale: float = 1.0  # output scale for logits
     imglayers: int = 2  # layers in image decoder (prior)
     obslayers: int = 1  # layers in observation encoder (posterior)

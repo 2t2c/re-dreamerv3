@@ -152,7 +152,7 @@ def main(argv=None):
         raise NotImplementedError(config.script)
 
 
-def make_agent(config):
+def make_agent(config: elements.Config) -> embodied.Agent:
     """
     Create agent instance using configuration
     """
@@ -180,7 +180,7 @@ def make_agent(config):
     ))
 
 
-def make_logger(config):
+def make_logger(config: elements.Config) -> elements.Logger:
     """
     Construct logger with selected outputs
     """
@@ -227,7 +227,7 @@ def make_logger(config):
     return logger
 
 
-def make_replay(config, folder, mode='train'):
+def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> embodied.Replay:
     """
     Initialize replay buffer with config-based parameters
     """
@@ -260,7 +260,7 @@ def make_replay(config, folder, mode='train'):
     return embodied.replay.Replay(**kwargs)
 
 
-def make_env(config, index, **overrides):
+def make_env(config: elements.Config, index: int, **overrides) -> embodied.Env:
     """
     Construct and wrap the environment with common wrappers
     """
@@ -285,7 +285,7 @@ def make_env(config, index, **overrides):
     return wrap_env(env, config)
 
 
-def wrap_env(env, config):
+def wrap_env(env: embodied.Env, config: elements.Config) -> embodied.Env:
     """
     Apply common wrappers for dtype unification, action clipping etc.
     """
@@ -300,7 +300,7 @@ def wrap_env(env, config):
     return env
 
 
-def make_stream(config, replay, mode):
+def make_stream(config: elements.Config, replay: embodied.Replay, mode: str) -> embodied.Stream:
     """
     Construct data stream with consecutive sampling logic
     """

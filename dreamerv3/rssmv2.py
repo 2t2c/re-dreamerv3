@@ -23,6 +23,7 @@ class RSSM(nj.Module):
     act: str = 'gelu'  # activation function
     unroll: bool = False  # whether to use scanning for unrolling time
     unimix: float = 0.01  # uniform mixing for discrete distributions
+    adaptive_unimix: bool = True  # whether to adaptively mix unimix
     outscale: float = 1.0  # output scale for logits
     imglayers: int = 2  # layers in image decoder (prior)
     obslayers: int = 1  # layers in observation encoder (posterior)
@@ -30,6 +31,8 @@ class RSSM(nj.Module):
     absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
     free_nats: float = 1.0  # threshold for KL regularization
+    trf_layers: int = 4 # transformer blocks
+    attention_heads: int = 8 # attention heads
 
     def __init__(self, act_space, **kw):
         # ensure compatibility with BlockLinear
@@ -95,6 +98,7 @@ class RSSM(nj.Module):
         carry = dict(deter=deter, stoch=stoch)
         feat = dict(deter=deter, stoch=stoch, logit=logit)
         entry = dict(deter=deter, stoch=stoch)
+        assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
         return carry, (entry, feat)
 
     def imagine(self, carry, policy, length, training, single=False):
@@ -107,6 +111,7 @@ class RSSM(nj.Module):
             stoch = nn.cast(self._dist(logit).sample(seed=nj.seed()))
             carry = nn.cast(dict(deter=deter, stoch=stoch))
             feat = nn.cast(dict(deter=deter, stoch=stoch, logit=logit))
+            assert all(x.dtype == nn.COMPUTE_DTYPE for x in (deter, stoch, logit))
             return carry, (feat, action)
         else:
             unroll = length if self.unroll else 1
@@ -147,7 +152,6 @@ class RSSM(nj.Module):
         # use Transformer for recurrent dynamics instead of GRU
         stoch = stoch.reshape((stoch.shape[0], -1))
         action /= sg(jnp.maximum(1, jnp.abs(action)))
-
         # prepare inputs for Transformer
         # project inputs to hidden dimension
         x0 = self.sub('dynin0', nn.Linear, self.hidden, **self.kw)(deter)
@@ -159,17 +163,35 @@ class RSSM(nj.Module):
 
         # stack the inputs for the Transformer (concatenation messes up the shape)
         x = jnp.stack([x0, x1, x2], axis=1)
-
+        g = self.attention_heads
+        # x = jnp.concatenate([x0, x1, x2], -1)[..., None, :].repeat(g, -2)
+        # x = self.sub('projection', nn.Linear, self.hidden, **self.kw)(x)
+        # create mask for causal masking
+        seq_len = x.shape[1]
+        mask = jnp.tril(jnp.ones((seq_len, seq_len)))
+        mask = mask[None, :, :]
+        mask = jnp.repeat(mask, x.shape[0], axis=0)
         # use transformer for recurrent processing
         x = self.sub('transformer', nn.Transformer,
                      units=self.hidden,
+                     layers=self.trf_layers,
+                     heads=self.attention_heads,
                      act=self.act,
                      norm=self.norm,
-                     outscale=self.outscale)(x)
-        x = x.reshape(x.shape[0], -1)
-
-        # project back to deterministic state size
-        deter = self.sub('dynout', nn.Linear, self.deter, **self.kw)(x)
+                     glu=True,
+                     outscale=self.outscale)(x=x, ts=None,
+                                             mask=mask, training=True)
+        x = self.sub('proj_out', nn.Linear, self.deter)(x)
+        deter = x.mean(axis=1) + deter
+        # x = x.reshape(x.shape[0], -1)
+        # flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
+        # group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
+        # gates = jnp.split(flat2group(x), 3, -1)
+        # reset, cand, update = [group2flat(x) for x in gates]
+        # reset = jax.nn.sigmoid(reset)
+        # cand = jnp.tanh(reset * cand)
+        # update = jax.nn.sigmoid(update - 1)
+        # deter = update * cand + (1 - update) * deter
 
         return deter
 
@@ -189,7 +211,7 @@ class RSSM(nj.Module):
 
     def _dist(self, logits):
         # returns a categorical distribution over logits with uniform mixing
-        out = embodied.jax.outs.OneHot(logits, self.unimix)
+        out = embodied.jax.outs.OneHot(logits, self.unimix, self.adaptive_unimix)
         out = embodied.jax.outs.Agg(out, 1, jnp.sum)
         return out
 
@@ -251,7 +273,7 @@ class Encoder(nj.Module):
             # adding multi-head attention after MLP layers
             attention_module = self.sub('attn_vec', nn.Attention,
                                         heads=self.attention_heads,
-                                        kv_heads=0, dropout=0.25)
+                                        kv_heads=0, dropout=0.1)
             x = attention_module(x, training=training)
             outs.append(x)
 
@@ -288,7 +310,7 @@ class Encoder(nj.Module):
             x = x.reshape((x.shape[0], -1, x.shape[-1]))
             attention_module = self.sub('attn_img', nn.Attention,
                                         heads=self.attention_heads,
-                                        kv_heads=0, dropout=0.25)
+                                        kv_heads=0, dropout=0.1)
             x = attention_module(x, training=training)
             outs.append(x)
 
@@ -399,7 +421,7 @@ class Decoder(nj.Module):
             # apply attention
             attn = self.sub('attn_img', nn.Attention,
                             heads=self.attention_heads,
-                            dropout=0.25)(x_flat, training=training)
+                            dropout=0.1)(x_flat, training=training)
             # residual connection and reshape back
             x = x_flat + attn
             x = x.reshape((B, H, W, C))

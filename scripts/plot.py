@@ -1,3 +1,6 @@
+import argparse
+import sys
+
 import concurrent.futures
 import functools
 import json
@@ -55,9 +58,11 @@ def load_runs(args):
   assert len(set(x.name for x in indirs)) == len(indirs), indirs
   records, filenames = [], []
   methods = re.compile(args.methods)
+  print(methods)
   tasks = re.compile(args.tasks)
   for indir in indirs:
     found = list(indir.glob(args.pattern))
+    print(found)
     assert found, (indir, args.pattern)
     for filename in found:
       if args.newstyle:
@@ -90,16 +95,8 @@ def bin_runs(df, args):
   if args.xlim:
     df['xlim'] = args.xlim
   else:
-
-    # Version where x axis can differ per task/method.
-    # If we ran something for longer it will still be plotted using this version.
-    # xlim = df.groupby('task')['xs'].agg(lambda xs: max(max(x) for x in xs))
-    # df = pd.merge(df, xlim.rename('xlim'), on='task', how='left')
-
-    # Version where x axis is cut off such that all plots stop at the same x value.
-    # Uncomment whicever you prefer.
-    xmax = min(max(xs) for xs in df['xs'])
-    df['xlim'] = xmax
+    xlim = df.groupby('task')['xs'].agg(lambda xs: max(max(x) for x in xs))
+    df = pd.merge(df, xlim.rename('xlim'), on='task', how='left')
 
   if args.binsize:
     df['xlim'] = df['xlim'].max()
@@ -223,7 +220,14 @@ def plot_runs(df, stats, args):
     style(ax, xticks=args.xticks, yticks=args.yticks)
     title = task.replace('_', ' ').replace(':', ' ').split(' ', 1)[1].title()
     ax.set_title(title)
+
+    plot_xlim_override = {
+            'dmc_cheetah_run': 1050000,
+            'atari100k_private_eye': 400_000,
+        }
+    
     args.xlim and ax.set_xlim(0, 1.03 * args.xlim)
+    task in plot_xlim_override and ax.set_xlim(0, 1.01 * plot_xlim_override[task])
     args.ylim and ax.set_ylim(0, 1.03 * args.ylim)
     for i, method in enumerate(methods):
       try:
@@ -255,8 +259,8 @@ def plot_runs(df, stats, args):
 
   outdir = elements.Path(args.outdir) / elements.Path(args.indirs[0]).stem
   outdir.mkdir()
-  filename = outdir / 'curves.png'
-  fig.savefig(filename, dpi=150)
+  filename = outdir / args.filename
+  fig.savefig(filename, dpi=300)
   print('Saved', filename)
 
 
@@ -376,6 +380,9 @@ def natfmt(x):
 
 
 def print_summary(df):
+  print(df.columns)
+  print(df["seed"].unique())
+  print(df.iloc[:, :3])
   methods = natsort(df.method.unique())
   tasks = natsort(df.task.unique())
   seeds = natsort(df.seed.unique())
@@ -394,7 +401,6 @@ def main(args):
   print_summary(df)
   if args.todf:
     assert args.todf.endswith('.json.gz')
-    import ipdb; ipdb.set_trace()
     df.to_json(args.todf, orient='records')
     print(f'Saved {args.todf}')
   stats = comp_stats(df, args)
@@ -402,12 +408,14 @@ def main(args):
 
 
 if __name__ == '__main__':
-  main(elements.Flags(
+  
+  default_args = dict(
       pattern='**/scores.jsonl',
-      indirs=[''],
-      outdir='../logdir/reproducibility',
-      methods='.*',
-      tasks='.*',
+      indirs=['../logdir/re-dreamerv3',
+              '../logdir/original'],
+      outdir='../logdir/',
+      methods='dreamer|rssmv2|reproducibility',
+      tasks='',
       newstyle=False,
       indir_prefix=False,
       workers=16,
@@ -423,7 +431,25 @@ if __name__ == '__main__':
       size=[3, 3],
       xticks=4,
       yticks=10,
-      stats=['runs', 'auto'],
+      stats=['none'],
       agg=True,
       todf='',
-  ).parse())
+      filename='curves.png',
+  )
+  
+  if len(sys.argv) <= 1:
+      main(elements.Flags(**default_args).parse())
+      sys.exit(0)
+  
+  parser = argparse.ArgumentParser(description='Plot experiment results')
+  parser.add_argument('--methods', type=str, default=default_args['methods'],
+                     help='Regex pattern for methods to include (default: %(default)s)')
+  parser.add_argument('--filename', type=str, default=default_args['filename'],
+                     help='Output filename (default: %(default)s)')
+  
+  cmd_args = parser.parse_args()
+  
+  for arg in vars(cmd_args):
+      default_args[arg] = getattr(cmd_args, arg)
+  
+  main(elements.Flags(**default_args).parse())
