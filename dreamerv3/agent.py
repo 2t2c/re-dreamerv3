@@ -44,7 +44,8 @@ class Agent(embodied.jax.Agent):
             'simple': rssm.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
         self.dyn = {
-            'rssm': rssmv2.RSSM,
+            # 'rssm': rssmv2.RSSM,
+            'rssm' : rssm.RSSM
         }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
         self.dec = {
             'simple': rssm.Decoder,
@@ -149,15 +150,14 @@ class Agent(embodied.jax.Agent):
         carry, obs, prevact, stepid = self._apply_replay_context(carry, data)
         metrics, (carry, entries, outs, mets) = self.opt(
             self.loss, carry, obs, prevact, training=True, has_aux=True)
+        wm_loss = mets.pop('wm_loss', None) # otherwise logging complains
         metrics.update(mets)
         self.slowval.update()
         outs = {}
 
         # Package step IDs and latent states for replay-context so the buffer can restore model context on sampling
         # If replay prioritization is used, packages the necessary signals as well.
-        print("Replay_context", self.config.replay_context)
         if self.config.replay_context:
-            print("In")
             updates = elements.tree.flatdict(dict(
                 stepid=stepid,  # [batch, time, bytes]; used to update priorities 
                 enc=entries[0],
@@ -166,8 +166,7 @@ class Agent(embodied.jax.Agent):
                 ))
             
             # TODO: if self.config.replay.fracs.curio > 0:
-            # updates['wm_loss'] = mets['wm_loss'] # [batch, time]; used as a priority signal in Curious Replay
-            # mets.pop('wm_loss') # otherwise logging complains
+            updates['priority'] = wm_loss # [batch, time]; used as a priority signal in Curious Replay
             B, T = obs['is_first'].shape
             assert all(x.shape[:2] == (B, T) for x in updates.values()), (
                 (B, T), {k: v.shape for k, v in updates.items()})
