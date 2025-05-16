@@ -15,14 +15,13 @@ class Replay:
 
   def __init__(
       self, length, capacity=None, directory=None, chunksize=1024,
-      online=False, selector=None, save_wait=False, name='unnamed', seed=0):
+      online=False, selector=None, save_wait=False, name='unnamed'):
 
     self.length = length
     self.capacity = capacity
     self.chunksize = chunksize
     self.name = name
 
-    # todo: pass seed here
     self.sampler = selector
 
     self.chunks = {}

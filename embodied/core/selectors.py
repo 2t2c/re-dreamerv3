@@ -290,7 +290,7 @@ class Prioritized:
 
 class Curious:
 
-  def __init__(self, alpha, beta, c, epsilon, branching=16, seed=0):
+  def __init__(self, alpha, beta, c, epsilon, seed, branching=16):
     self.alpha   = float(alpha)
     self.beta    = float(beta)
     self.c       = float(c)
