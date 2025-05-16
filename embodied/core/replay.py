@@ -22,7 +22,8 @@ class Replay:
     self.chunksize = chunksize
     self.name = name
 
-    self.sampler = selector or selectors.Uniform(seed)
+    # todo: pass seed here
+    self.sampler = selector
 
     self.chunks = {}
     self.refs = {}
@@ -128,13 +129,13 @@ class Replay:
 
   @elements.timer.section('replay_update')
   def update(self, data):
-    # assert 'wm_loss' in data, data.keys()
     stepid = data.pop('stepid')
     priority = data.pop('priority', None)
     assert stepid.ndim == 3, stepid.shape
     self.metrics['updates'] += int(np.prod(stepid.shape[:-1]))
     if priority is not None:
       assert priority.ndim == 2, priority.shape
+      # pass priority signal and stepids to sampler
       self.sampler.prioritize(
           stepid.reshape((-1, stepid.shape[-1])),
           priority.flatten())
