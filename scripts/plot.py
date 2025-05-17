@@ -58,11 +58,11 @@ def load_runs(args):
   assert len(set(x.name for x in indirs)) == len(indirs), indirs
   records, filenames = [], []
   methods = re.compile(args.methods)
-  # print(methods)
+  print(methods)
   tasks = re.compile(args.tasks)
   for indir in indirs:
     found = list(indir.glob(args.pattern))
-    # print(found)
+    print(found)
     assert found, (indir, args.pattern)
     for filename in found:
       if args.newstyle:
@@ -417,7 +417,7 @@ if __name__ == '__main__':
       indirs=['../logdir/re-dreamerv3',
               '../logdir/original'],
       outdir='../logdir/',
-      methods='dreamer|rssmv2|reproducibility',
+      methods='dreamer|reproducibility|rssmv2|curious_replay',
       max_seeds=3,
       tasks='',
       newstyle=False,
