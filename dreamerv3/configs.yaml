@@ -42,10 +42,9 @@ defaults:
   replay:
     size: 5e6
     online: True
-    fracs: {uniform: 0.0, priority: 0.0, recency: 0.0, curious: 1.0}
+    fracs: {uniform: 1.0, priority: 0.0, recency: 0.0, curious: 0.0}
     prio: {exponent: 0.8, maxfrac: 0.5, initial: inf, zero_on_sample: True}
     curious: {beta: 0.7, alpha: 0.7, c: 1e4, epsilon: 0.1}
-    priosignal: model
     recexp: 1.0
     chunksize: 1024
 
@@ -177,6 +176,17 @@ procgen:
 atari100k:
   task: atari100k_private_eye
   run: {steps: 1.1e5, envs: 1, train_ratio: 256}
+
+atari100k_private_eye:
+  <<: *size200m
+  task: atari100k_private_eye
+  run:
+    steps: 1.01e5
+    train_ratio: 128
+    envs: 1
+  env:
+    atari100k:
+      repeat: 4
 
 crafter:
   task: crafter_reward
