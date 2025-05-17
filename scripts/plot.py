@@ -414,7 +414,7 @@ if __name__ == '__main__':
       indirs=['../logdir/re-dreamerv3',
               '../logdir/original'],
       outdir='../logdir/',
-      methods='dreamer|rssmv2|reproducibility',
+      methods='dreamer|reproducibility|curious_replay',
       tasks='',
       newstyle=False,
       indir_prefix=False,
