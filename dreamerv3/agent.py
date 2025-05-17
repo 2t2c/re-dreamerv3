@@ -93,11 +93,14 @@ class Agent(embodied.jax.Agent):
 
         # define which keys belong to the world‐model loss
         self.wm_keys = {
-            'dyn', 'rep',           # KL terms
-            'rew', 'con',           # reward & continuation
-            'image', 'vector',      # observation reconstructions
-            'token', 'count',
-            'float2d', 'int2d'
+            k for k in (
+                'dyn','rep',      # KL terms
+                'rew','con',      # reward & continuation
+                'image','vector', # observation reconstructions
+                'token','count',
+                'float2d','int2d'
+            )
+            if k in self.scales   # depending on the environment different observation reconstruction components are present
         }
 
     @property
