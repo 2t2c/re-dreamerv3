@@ -99,7 +99,7 @@ defaults:
       simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, winit: trunc_normal_in, symlog: True, outer: False, kernel: 5, strided: False}
     dec:
       typ: simple
-      simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, outscale: 1.0, winit: trunc_normal_in, outer: False, kernel: 5, bspace: 8, strided: False}
+      simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, outscale: 1.0, winit: trunc_normal_in, outer: False, kernel: 5, bspace: 8, strided: False, symlog_log_cosh: False}
     rewhead: {layers: 1, units: 1024, act: silu, norm: rms, output: symexp_twohot, outscale: 0.0, winit: trunc_normal_in, bins: 255}
     conhead: {layers: 1, units: 1024, act: silu, norm: rms, output: binary, outscale: 1.0, winit: trunc_normal_in}
     policy: {layers: 3, units: 1024, act: silu, norm: rms, minstd: 0.1, maxstd: 1.0, outscale: 0.01, unimix: 0.01, winit: trunc_normal_in}
@@ -181,10 +181,12 @@ crafter:
   run: {steps: 1.1e6, envs: 1, train_ratio: 512}
 
 dmc_proprio:
-  <<: *size1m
-  task: dmc_walker_walk
-  env.dmc.image: False
-  run: {steps: 1.1e6, train_ratio: 1024}
+  <<: *size12m
+  task: dmc_walker_run
+  env.dmc.image: True
+  env.dmc.repeat: 2
+  agent.dec.simple.symlog_log_cosh: True
+  run: {envs: 16, steps: 2.5e5, train_ratio: 512}
 
 dmc_vision:
   # Configuration as per DreamerV3 Table 2.

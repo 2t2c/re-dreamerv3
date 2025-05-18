@@ -141,6 +141,21 @@ class MSE(Output):
     return jnp.square(self.mean - sg(self.squash(f32(target))))
 
 
+class LogCosh(Output):
+    def __init__(self, mean, squash=None):
+        self.mean = f32(mean)
+        self.squash = squash or (lambda x: x)
+
+    def pred(self):
+        return self.mean
+
+    def loss(self, target):
+        assert jnp.issubdtype(target.dtype, jnp.floating), target.dtype
+        assert self.mean.shape == target.shape, (self.mean.shape, target.shape)
+        diff = self.mean - sg(self.squash(f32(target)))
+        return jnp.log(jnp.cosh(diff))
+
+
 class Huber(Output):
 
   def __init__(self, mean, eps=1.0):
@@ -156,6 +171,22 @@ class Huber(Output):
     assert self.mean.shape == target.shape, (self.mean.shape, target.shape)
     dist = self.mean - sg(f32(target))
     return jnp.sqrt(jnp.square(dist) + jnp.square(self.eps)) - self.eps
+
+
+class SymlogHuber(Output):
+    def __init__(self, mean, eps=1.0, squash=None):
+        self.mean = f32(mean)
+        self.eps = eps
+        self.squash = squash or (lambda x: x)
+
+    def pred(self):
+        return self.mean
+
+    def loss(self, target):
+        assert jnp.issubdtype(target.dtype, jnp.floating), target.dtype
+        assert self.mean.shape == target.shape, (self.mean.shape, target.shape)
+        dist = self.mean - sg(self.squash(f32(target)))
+        return jnp.sqrt(jnp.square(dist) + jnp.square(self.eps)) - self.eps
 
 
 class Normal(Output):
