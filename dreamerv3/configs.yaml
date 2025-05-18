@@ -42,9 +42,9 @@ defaults:
   replay:
     size: 5e6
     online: True
-    fracs: {uniform: 1.0, priority: 0.0, recency: 0.0, curious: 0.0}
-    prio: {exponent: 0.8, maxfrac: 0.5, initial: inf, zero_on_sample: True}
-    curious: {beta: 0.7, alpha: 0.7, c: 1e4, epsilon: 0.1}
+    fracs: {uniform: 1.0, priority: 0.0, curious: 0.0}
+    prioritized: {alpha: 0.6, epsilon: 1e-6, max_aggregation: False}
+    curious: {beta: 0.7, alpha: 0.7, c: 1e4, epsilon: 0.1, max_aggregation: False}
     recexp: 1.0
     chunksize: 1024
 

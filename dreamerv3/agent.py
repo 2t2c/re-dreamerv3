@@ -153,7 +153,14 @@ class Agent(embodied.jax.Agent):
         carry, obs, prevact, stepid = self._apply_replay_context(carry, data)
         metrics, (carry, entries, outs, mets) = self.opt(
             self.loss, carry, obs, prevact, training=True, has_aux=True)
-        wm_loss = mets.pop('wm_loss', None) # otherwise logging complains
+        
+        wm_loss = outs.get('wm_loss', None)   # CR
+        td_error = outs.get('td_error', None) # PER
+        if td_error is not None:
+            metrics['replay/mean(td_error_abs)'] = jnp.mean(jnp.abs(td_error))
+        if wm_loss is not None:
+            metrics['replay/mean(wm_loss_abs)'] = jnp.mean(jnp.abs(wm_loss))
+
         metrics.update(mets) # logging
         self.slowval.update()
         outs = {}
@@ -169,10 +176,16 @@ class Agent(embodied.jax.Agent):
                 ))
             
             if self.config.replay_fracs.curious > 0:
-                updates['priority'] = wm_loss # [batch, time]; used as a priority signal in Curious Replay
+                updates['curious_signal'] = wm_loss # [batch, time]; used as a priority signal in Curious Replay
+
             B, T = obs['is_first'].shape
             assert all(x.shape[:2] == (B, T) for x in updates.values()), (
                 (B, T), {k: v.shape for k, v in updates.items()})
+            
+            if self.config.replay_fracs.priority > 0:
+                updates['priority_signal'] = td_error # [batch, time - 1] corresponding to stepid[:, :-1]
+                assert td_error.shape[:2] == stepid[:, :-1].shape[:2] 
+
             outs['replay'] = updates
         carry = (*carry, {k: data[k][:, -1] for k in self.act_space})
         return carry, outs, metrics
@@ -303,7 +316,10 @@ class Agent(embodied.jax.Agent):
                 self.scales[k] * losses[k]
                 for k in self.wm_keys
             )
-            metrics['wm_loss'] = wm_loss # Hacky way to pass wm_loss per step to train()
+            outs['wm_loss'] = wm_loss
+
+        if self.config.replay_fracs.priority > 0:
+            outs['td_error'] = reploss_out['td_error']
 
         return loss, (carry, entries, outs, metrics)
 
@@ -521,12 +537,14 @@ def repl_loss(
     losses = {}
 
     voffset, vscale = valnorm.stats()
-    val = value.pred() * vscale + voffset
+    val = value.pred() * vscale + voffset # [Batch, K]; V(s_t) for t=0..K-1.
     slowval = slowvalue.pred() * vscale + voffset
     tarval = slowval if slowtar else val
     disc = 1 - 1 / horizon
     weight = f32(~last)
-    ret = lambda_return(last, term, rew, tarval, boot, disc, lam)
+    ret = lambda_return(last, term, rew, tarval, boot, disc, lam) # [Batch, K-1]; G_t
+
+    td_error = val[:, :-1] - ret # for PER
 
     voffset, vscale = valnorm(ret, update)
     ret_normed = (ret - voffset) / vscale
@@ -537,6 +555,7 @@ def repl_loss(
 
     outs = {}
     outs['ret'] = ret
+    outs['td_error'] = td_error
     metrics = {}
 
     return losses, outs, metrics
