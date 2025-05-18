@@ -129,12 +129,13 @@ class Recency:
 class Prioritized:
 
   def __init__(
-      self, alpha, epsilon, seed, branching=16):
+      self, alpha, epsilon, seed, max_aggregation, branching=16):
     self.alpha = float(alpha)
     self.epsilon = float(epsilon)
     self.tree = SampleTree(branching, seed)
     assert alpha == 0.6, alpha
     assert epsilon == 1e-6, epsilon
+    self.max_aggregation = max_aggregation
     self.lock = elements.RWLock()
 
     # Stores the priority of each step ID.
@@ -207,6 +208,10 @@ class Prioritized:
 
   def _aggregate(self, key):
     prios = [self.prios[sid] for sid in self.items[key]]
+
+    if self.max_aggregation:
+      return max(prios)
+
     mean = sum(prios) / len(prios)
     return mean
 
@@ -218,7 +223,7 @@ class Curious:
   read/write locking via elements.RWLock.
   """
 
-  def __init__(self, alpha, beta, c, epsilon, seed, branching=16):
+  def __init__(self, alpha, beta, c, epsilon, seed, max_aggregation, branching=16):
     self.alpha   = float(alpha)
     self.beta    = float(beta)
     self.c       = float(c)
@@ -227,7 +232,7 @@ class Curious:
     assert beta == 0.7, beta
     assert c == 1e4, c
     assert epsilon == 0.1, epsilon
-
+    self.max_aggregation = max_aggregation
     self.tree  = SampleTree(branching, seed)
     self.prios = collections.defaultdict(int)
     self.visit = collections.defaultdict(int)
@@ -297,6 +302,10 @@ class Curious:
 
   def _aggregate(self, key):
     prios = [self.prios[sid] for sid in self.items[key]]
+
+    if self.max_aggregation:
+      return max(prios)
+
     mean = sum(prios) / len(prios)
     return mean
 

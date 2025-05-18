@@ -262,10 +262,12 @@ def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> em
 
         elif config.replay.fracs.priority > 0:
             print("Using only Prioritized Experience Replay")
+            print("Using max_aggregation:", config.replay.prioritized.max_aggregation)
             kwargs['selector'] = selectors.Prioritized(seed=config.seed, **config.replay.prioritized)
 
         elif config.replay.fracs.curious > 0:
             print("Using only Curious Replay")
+            print("Using max_aggregation:", config.replay.curious.max_aggregation)
             kwargs['selector'] = selectors.Curious(seed=config.seed, **config.replay.curious)
 
     return embodied.replay.Replay(**kwargs)
