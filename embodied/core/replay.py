@@ -129,15 +129,26 @@ class Replay:
   @elements.timer.section('replay_update')
   def update(self, data):
     stepid = data.pop('stepid')
-    priority = data.pop('priority', None)
+    priority_signal = data.pop('priority_signal', None)
+    curious_signal = data.pop('curious_signal', None)
     assert stepid.ndim == 3, stepid.shape
+
     self.metrics['updates'] += int(np.prod(stepid.shape[:-1]))
-    if priority is not None:
-      assert priority.ndim == 2, priority.shape
+
+    if priority_signal is not None:
+      assert priority_signal.ndim == 2, priority_signal.shape
       # pass priority signal and stepids to sampler
       self.sampler.prioritize(
-          stepid.reshape((-1, stepid.shape[-1])),
-          priority.flatten())
+        stepid[:, :-1].reshape((-1, stepid.shape[-1])), # ignore last time step as it does not have a td error
+        priority_signal.flatten())
+      
+    if curious_signal is not None:
+      assert curious_signal.ndim == 2, curious_signal.shape
+      # pass curious signal and stepids to sampler
+      self.sampler.prioritize(
+        stepid.reshape((-1, stepid.shape[-1])),
+        curious_signal.flatten())
+      
     if data:
       for i, stepid in enumerate(stepid):
         stepid = stepid[0].tobytes()

@@ -247,19 +247,28 @@ def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> em
         length=length, capacity=int(capacity), online=config.replay.online,
         chunksize=config.replay.chunksize, directory=directory)
 
-    if config.replay.fracs.uniform < 1 and mode == 'train':
+    if mode == 'train':
         assert config.jax.compute_dtype in ('bfloat16', 'float32'), (
             'gradient scaling for low-precision training can produce invalid loss '
             'outputs that are incompatible with prioritized replay.')
         recency = 1.0 / np.arange(1, capacity + 1) ** config.replay.recexp
         selectors = embodied.replay.selectors
-        kwargs['selector'] = selectors.Curious(seed=config.seed, **config.replay.curious)
-        # kwargs['selector'] = selectors.Mixture(dict(
-        #     uniform=selectors.Uniform(),
-        #     priority=selectors.Prioritized(**config.replay.prio),
-        #     recency=selectors.Recency(recency),
-        #     curious=selectors.Curious(**config.replay.curio)
-        # ), config.replay.fracs)
+
+        if config.replay.fracs.uniform > 0:
+            print("Using only uniform replay")
+            kwargs['selector'] = selectors.Uniform(seed=config.seed)
+
+        elif config.replay.fracs.priority > 0 and config.replay.fracs.curious > 0:
+            print("Using only PER+CR replay")
+            # TODO: kwargs['selector'] = ...
+
+        elif config.replay.fracs.priority > 0:
+            print("Using only Prioritized Experience Replay")
+            kwargs['selector'] = selectors.Prioritized(seed=config.seed, **config.replay.prioritized)
+
+        elif config.replay.fracs.curious > 0:
+            print("Using only Curious Replay")
+            kwargs['selector'] = selectors.Curious(seed=config.seed, **config.replay.curious)
 
     return embodied.replay.Replay(**kwargs)
 
