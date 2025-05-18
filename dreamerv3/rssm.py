@@ -30,6 +30,7 @@ class RSSM(nj.Module):
     absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
     free_nats: float = 1.0  # threshold for KL regularization
+    gating: bool = False  # whether to use gating in transformer
 
     def __init__(self, act_space, **kw):
         # ensure compatibility with BlockLinear

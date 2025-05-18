@@ -5,6 +5,8 @@ import elements
 import embodied
 import numpy as np
 from embodied.core import base
+import warnings
+warnings.filterwarnings("ignore")
 
 def train(
     make_agent: Callable[[], embodied.Agent],
