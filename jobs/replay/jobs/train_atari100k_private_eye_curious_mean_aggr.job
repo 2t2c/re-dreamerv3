@@ -19,9 +19,9 @@ module load Anaconda3/2023.07-2
 source activate re-dreamer
 
 # global parameters
-SEED=0
+SEED=1
 TASK=atari100k_private_eye
-PROJECT=prioritized_replay
+PROJECT=curious_replay
 DIR=$HOME/re-dreamerv3/
 
 srun python "${DIR}/dreamerv3/main.py" \
@@ -31,5 +31,6 @@ srun python "${DIR}/dreamerv3/main.py" \
     --configs atari100k_private_eye \
     --seed "$SEED" \
     --replay.fracs.uniform 0.0 \
-    --replay.fracs.priority 1.0 \
-    --replay.fracs.curious 0.0 \
+    --replay.fracs.priority 0.0 \
+    --replay.fracs.curious 1.0 \
+    --replay.curious.max_aggregation False \

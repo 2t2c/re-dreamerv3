@@ -33,3 +33,4 @@ srun python "${DIR}/dreamerv3/main.py" \
     --replay.fracs.uniform 0.0 \
     --replay.fracs.priority 0.0 \
     --replay.fracs.curious 1.0 \
+    --replay.curious.max_aggregation True \
