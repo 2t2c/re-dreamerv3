@@ -186,6 +186,7 @@ dmc_proprio:
   env.dmc.image: True
   env.dmc.repeat: 2
   agent.dec.simple.symlog_log_cosh: True
+  agent.dyn.rssm.gating: True 
   run: {envs: 16, steps: 2.5e5, train_ratio: 512}
 
 dmc_vision:
