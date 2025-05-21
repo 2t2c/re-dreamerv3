@@ -58,11 +58,11 @@ def load_runs(args):
   assert len(set(x.name for x in indirs)) == len(indirs), indirs
   records, filenames = [], []
   methods = re.compile(args.methods)
-  print(methods)
+  # print(methods)
   tasks = re.compile(args.tasks)
   for indir in indirs:
     found = list(indir.glob(args.pattern))
-    print(found)
+    # print(found)
     assert found, (indir, args.pattern)
     for filename in found:
       if args.newstyle:
@@ -398,6 +398,9 @@ def print_summary(df):
 def main(args):
   df = load_runs(args)
   df = bin_runs(df, args)
+  # select first n seeds per group
+  df['int_seed'] = df['seed'].str.split("_").str[-1].astype(int)
+  df = df.groupby(['task', 'method']).apply(lambda g: g.nsmallest(args.max_seeds, 'int_seed')).reset_index(drop=True)
   print_summary(df)
   if args.todf:
     assert args.todf.endswith('.json.gz')
@@ -415,6 +418,7 @@ if __name__ == '__main__':
               '../logdir/original'],
       outdir='../logdir/',
       methods='dreamer|rssmv2|reproducibility',
+      max_seeds=3,
       tasks='',
       newstyle=False,
       indir_prefix=False,
