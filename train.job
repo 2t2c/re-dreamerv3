@@ -6,7 +6,7 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=train
 #SBATCH --ntasks=1
-#SBATCH --time=10:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=train_output_%A.out
 
@@ -20,16 +20,17 @@ source activate re-dreamer
 
 # global parameters
 SEED=0
-TASK=atari100k_private_eye
-PROJECT=reproducibility
+RUN=dyn
+TASK=dmc_walker_run
+PROJECT=rssmv2
 DIR=$HOME/re-dreamerv3/
 
 srun python "${DIR}/dreamerv3/main.py" \
-    --run_name "${TASK}" \
+    --run_name "gated_${RUN}_L4_H8" \
     --project "${PROJECT}" \
-    --logdir $HOME/logdir/${PROJECT}/${TASK}/${SEED}/{timestamp} \
-    --configs atari100k size1m \
-    --run.steps 25000 \
-    --run.train_ratio 32 \
+    --logdir $HOME/logdir/${PROJECT}/${TASK}/${RUN}/${SEED}/{timestamp} \
+    --configs dmc_proprio \
+    --run.steps 2.5e5 \
+    --run.train_ratio 512 \
     --batch_size 16 \
     --seed "$SEED"
