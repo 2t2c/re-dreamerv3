@@ -257,8 +257,19 @@ def make_replay(config: elements.Config, folder: str, mode: str = 'train') -> em
             kwargs['selector'] = selectors.Uniform(seed=config.seed)
 
         elif config.replay.fracs.priority > 0 and config.replay.fracs.curious > 0:
-            print("Using only PER+CR replay")
-            # TODO: kwargs['selector'] = ...
+            print("Using PER + Curious Replay mixture")
+            print("PER max_aggregation:", config.replay.prioritized.max_aggregation)
+            print("CR max_aggregation:", config.replay.curious.max_aggregation)
+            
+            kwargs['selector'] = selectors.Mixture(dict(
+                    priority=selectors.Prioritized(seed=config.seed, **config.replay.prioritized),
+                    curious=selectors.Curious(seed=config.seed, **config.replay.curious),
+                ),
+                {
+                    'priority': config.replay.fracs.priority,
+                    'curious': config.replay.fracs.curious,
+                }
+            )
 
         elif config.replay.fracs.priority > 0:
             print("Using only Prioritized Experience Replay")
