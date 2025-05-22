@@ -135,19 +135,37 @@ class Replay:
 
     self.metrics['updates'] += int(np.prod(stepid.shape[:-1]))
 
-    if priority_signal is not None:
-      assert priority_signal.ndim == 2, priority_signal.shape
-      # pass priority signal and stepids to sampler
-      self.sampler.prioritize(
-        stepid[:, :-1].reshape((-1, stepid.shape[-1])), # ignore last time step as it does not have a td error
-        priority_signal.flatten())
-      
-    if curious_signal is not None:
-      assert curious_signal.ndim == 2, curious_signal.shape
-      # pass curious signal and stepids to sampler
-      self.sampler.prioritize(
-        stepid.reshape((-1, stepid.shape[-1])),
-        curious_signal.flatten())
+    # If using a Mixture selector, delegate signal to each sub-selector
+    if hasattr(self.sampler, 'selectors'):
+        print('Updating Mixture selector')
+        for selector in self.sampler.selectors:
+            if priority_signal is not None and hasattr(selector, 'prioritize') and 'prioritized' in selector.__class__.__name__.lower():
+                print('Updating priority signal')
+                selector.prioritize(
+                    stepid[:, :-1].reshape((-1, stepid.shape[-1])),
+                    priority_signal.flatten())
+
+            if curious_signal is not None and hasattr(selector, 'prioritize') and 'curious' in selector.__class__.__name__.lower():
+                print('Updating curious signal')
+                selector.prioritize(
+                    stepid.reshape((-1, stepid.shape[-1])),
+                    curious_signal.flatten())
+
+    else:
+
+      if priority_signal is not None:
+        assert priority_signal.ndim == 2, priority_signal.shape
+        # pass priority signal and stepids to sampler
+        self.sampler.prioritize(
+          stepid[:, :-1].reshape((-1, stepid.shape[-1])), # ignore last time step as it does not have a td error
+          priority_signal.flatten())
+        
+      if curious_signal is not None:
+        assert curious_signal.ndim == 2, curious_signal.shape
+        # pass curious signal and stepids to sampler
+        self.sampler.prioritize(
+          stepid.reshape((-1, stepid.shape[-1])),
+          curious_signal.flatten())
       
     if data:
       for i, stepid in enumerate(stepid):
