@@ -34,5 +34,3 @@ srun python "${DIR}/dreamerv3/main.py" \
     --replay.fracs.priority 0.5 \
     --replay.fracs.curious 0.5 \
     --replay.curious.max_aggregation False \
-
-deactivate
