@@ -21,7 +21,7 @@ source activate re-dreamer
 # global parameters
 SEED=1
 TASK=atari100k_private_eye
-PROJECT=curious_replay
+PROJECT=per_plus_cr
 DIR=$HOME/re-dreamerv3/
 
 srun python "${DIR}/dreamerv3/main.py" \
