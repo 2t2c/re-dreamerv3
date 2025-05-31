@@ -84,6 +84,45 @@ python -m scope.viewer --basedir ~/logdir --port 8000
 
 Scalar metrics are also writting as JSONL files.
 
+# Running experiments for PER, CR and Transformer-based SSM
+
+This is a sample command which performs an experiment for the combination of PER, CR and Transformer-based SSM. You can find the full config options in `configs.yaml`. There we have specified the default configs for the three environments - `dmc_proprio_walker_run` for Walker Run, `dmc_vision` for Cheetah Run and `atari100k_private_eye` for Private Eye.
+
+```sh
+python dreamerv3/main.py \
+    --run_name dmc_proprio_walker_run \
+    --project combined_rssmv2_replays \
+    --logdir logdir/combined_rssmv2_replays/dmc_proprio_walker_run/1/{timestamp} \
+    --configs dmc_proprio_walker_run \
+    --seed 1 \
+    --replay.fracs.uniform 0.0 \
+    --replay.fracs.priority 0.5 \
+    --replay.fracs.curious 0.5 \
+    --replay.curious.max_aggregation False \
+    --agent.use_transformer True \
+    --agent.dyn.rssm.gating True \
+    --agent.dyn.rssm.adaptive_unimix True \
+    --agent.dec.simple.symlog_log_cosh True
+```
+
+To enable / disable use of Transformer-based SSM, use flag:
+```
+--agent.use_transformer True
+```
+To control the ratio between fraction of samples from different prioritization strategies, use flags:
+```
+--replay.fracs.uniform 0.0
+--replay.fracs.priority 0.5
+--replay.fracs.curious 0.5
+```
+
+## Plotting the results
+We have a script which plots results from multiple runs. You can specify which methods to plot and where to save the result. To explore the runs, check out the /logdir directory.
+
+```sh
+python plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays" --filename combined_results.png
+```
+
 # Tips
 
 - All config options are listed in `dreamerv3/configs.yaml` and you can
