@@ -33,6 +33,7 @@ class RSSM(nj.Module):
     free_nats: float = 1.0  # threshold for KL regularization
     trf_layers: int = 4 # transformer blocks
     attention_heads: int = 8 # attention heads
+    gating: bool = False  # whether to use gating in transformer
 
     def __init__(self, act_space, **kw):
         # ensure compatibility with BlockLinear
@@ -182,16 +183,20 @@ class RSSM(nj.Module):
                      outscale=self.outscale)(x=x, ts=None,
                                              mask=mask, training=True)
         x = self.sub('proj_out', nn.Linear, self.deter)(x)
-        deter = x.mean(axis=1) + deter
-        # x = x.reshape(x.shape[0], -1)
-        # flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
-        # group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
-        # gates = jnp.split(flat2group(x), 3, -1)
-        # reset, cand, update = [group2flat(x) for x in gates]
-        # reset = jax.nn.sigmoid(reset)
-        # cand = jnp.tanh(reset * cand)
-        # update = jax.nn.sigmoid(update - 1)
-        # deter = update * cand + (1 - update) * deter
+        # approach 1: mean pooling
+        if not self.gating:
+            deter = x.mean(axis=1) + deter
+        # approach 2: trf gating
+        else:
+            x = x.reshape(x.shape[0], -1)
+            flat2group = lambda x: einops.rearrange(x, '... (g h) -> ... g h', g=g)
+            group2flat = lambda x: einops.rearrange(x, '... g h -> ... (g h)', g=g)
+            gates = jnp.split(flat2group(x), 3, -1)
+            reset, cand, update = [group2flat(x) for x in gates]
+            reset = jax.nn.sigmoid(reset)
+            cand = jnp.tanh(reset * cand)
+            update = jax.nn.sigmoid(update - 1)
+            deter = update * cand + (1 - update) * deter
 
         return deter
 

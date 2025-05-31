@@ -137,16 +137,16 @@ class Replay:
 
     # If using a Mixture selector, delegate signal to each sub-selector
     if hasattr(self.sampler, 'selectors'):
-        print('Updating Mixture selector')
+        # print('Updating Mixture selector')
         for selector in self.sampler.selectors:
             if priority_signal is not None and hasattr(selector, 'prioritize') and 'prioritized' in selector.__class__.__name__.lower():
-                print('Updating priority signal')
+                # print('Updating priority signal')
                 selector.prioritize(
                     stepid[:, :-1].reshape((-1, stepid.shape[-1])),
                     priority_signal.flatten())
 
             if curious_signal is not None and hasattr(selector, 'prioritize') and 'curious' in selector.__class__.__name__.lower():
-                print('Updating curious signal')
+                # print('Updating curious signal')
                 selector.prioritize(
                     stepid.reshape((-1, stepid.shape[-1])),
                     curious_signal.flatten())

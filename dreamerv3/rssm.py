@@ -30,6 +30,7 @@ class RSSM(nj.Module):
     absolute: bool = False  # whether to use only tokens or concatenate with deter
     blocks: int = 8  # number of blocks for BlockLinear layers
     free_nats: float = 1.0  # threshold for KL regularization
+    gating: bool = False  # whether to use gating in transformer
 
     def __init__(self, act_space, **kw):
         # ensure compatibility with BlockLinear
@@ -289,6 +290,7 @@ class Decoder(nj.Module):
     layers: int = 3
     kernel: int = 5
     symlog: bool = True
+    symlog_log_cosh: bool = False
     bspace: int = 8
     outer: bool = False
     strided: bool = False
@@ -336,7 +338,8 @@ class Decoder(nj.Module):
         if self.veckeys:
             # process vector targets through mlp and map to prediction heads
             spaces = {k: self.obs_space[k] for k in self.veckeys}
-            o1, o2 = 'categorical', ('symlog_mse' if self.symlog else 'mse')
+            o1, o2 = 'categorical', (
+                'symlog_log_cosh' if self.symlog_log_cosh else ('symlog_mse' if self.symlog else 'mse'))
             outputs = {k: o1 if v.discrete else o2 for k, v in spaces.items()}
             kw = dict(**self.kw, act=self.act, norm=self.norm)
             x = self.sub('mlp', nn.MLP, self.layers, self.units, **kw)(inp)

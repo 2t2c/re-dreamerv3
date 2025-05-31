@@ -129,6 +129,16 @@ class Head(nj.Module):
     pred = self.sub('pred', nets.Linear, self.space.shape, **self.kw)(x)
     return outs.MSE(pred, nets.symlog)
 
+  def symlog_log_cosh(self, x):
+    assert not self.space.discrete
+    pred = self.sub('pred', nets.Linear, self.space.shape, **self.kw)(x)
+    return outs.LogCosh(pred, squash=nets.symlog)
+
+  def symlog_huber(self, x, eps=1.0):
+    assert not self.space.discrete
+    pred = self.sub('pred', nets.Linear, self.space.shape, **self.kw)(x)
+    return outs.SymlogHuber(pred, eps=eps, squash=nets.symlog)
+
   def symexp_twohot(self, x):
     assert not self.space.discrete
     shape = (*self.space.shape, self.bins)

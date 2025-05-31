@@ -43,10 +43,16 @@ class Agent(embodied.jax.Agent):
         self.enc = {
             'simple': rssm.Encoder,
         }[config.enc.typ](enc_space, **config.enc[config.enc.typ], name='enc')
-        self.dyn = {
-            # 'rssm': rssmv2.RSSM,
-            'rssm' : rssm.RSSM
-        }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
+
+        if config.use_transformer:
+            self.dyn = {
+                'rssm': rssmv2.RSSM,
+            }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
+        else:
+            self.dyn = {
+                'rssm': rssm.RSSM,
+            }[config.dyn.typ](act_space, **config.dyn[config.dyn.typ], name='dyn')
+
         self.dec = {
             'simple': rssm.Decoder,
         }[config.dec.typ](dec_space, **config.dec[config.dec.typ], name='dec')

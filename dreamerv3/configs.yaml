@@ -93,13 +93,13 @@ defaults:
     ac_grads: False
     dyn:
       typ: rssm
-      rssm: {deter: 8192, hidden: 1024, stoch: 32, classes: 64, act: silu, norm: rms, unimix: 0.01, adaptive_unimix: True, outscale: 1.0, winit: trunc_normal_in, imglayers: 2, obslayers: 1, dynlayers: 1, absolute: False, blocks: 8, free_nats: 1.0}
+      rssm: {deter: 8192, hidden: 1024, stoch: 32, classes: 64, act: silu, norm: rms, unimix: 0.01, adaptive_unimix: True, gating: False, outscale: 1.0, winit: trunc_normal_in, imglayers: 2, obslayers: 1, dynlayers: 1, absolute: False, blocks: 8, free_nats: 1.0}
     enc:
       typ: simple
       simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, winit: trunc_normal_in, symlog: True, outer: False, kernel: 5, strided: False}
     dec:
       typ: simple
-      simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, outscale: 1.0, winit: trunc_normal_in, outer: False, kernel: 5, bspace: 8, strided: False}
+      simple: {depth: 64, mults: [2, 3, 4, 4], layers: 3, units: 1024, act: silu, norm: rms, outscale: 1.0, winit: trunc_normal_in, outer: False, kernel: 5, bspace: 8, strided: False, symlog_log_cosh: False}
     rewhead: {layers: 1, units: 1024, act: silu, norm: rms, output: symexp_twohot, outscale: 0.0, winit: trunc_normal_in, bins: 255}
     conhead: {layers: 1, units: 1024, act: silu, norm: rms, output: binary, outscale: 1.0, winit: trunc_normal_in}
     policy: {layers: 3, units: 1024, act: silu, norm: rms, minstd: 0.1, maxstd: 1.0, outscale: 0.01, unimix: 0.01, winit: trunc_normal_in}
@@ -121,6 +121,7 @@ defaults:
     repval_grad: True
     report: True
     report_gradnorms: False
+    use_transformer: False
 
 size1m: &size1m
   .*\.rssm: {deter: 512, hidden: 64, classes: 4}
@@ -192,10 +193,13 @@ crafter:
   run: {steps: 1.1e6, envs: 1, train_ratio: 512}
 
 dmc_proprio:
-  <<: *size1m
-  task: dmc_walker_walk
-  env.dmc.image: False
-  run: {steps: 1.1e6, train_ratio: 1024}
+  <<: *size12m
+  task: dmc_walker_run
+  env.dmc.image: True
+  env.dmc.repeat: 2
+  agent.dec.simple.symlog_log_cosh: True
+  agent.dyn.rssm.gating: True 
+  run: {envs: 16, steps: 2.5e5, train_ratio: 512}
 
 dmc_walker_run:
   <<: *size12m

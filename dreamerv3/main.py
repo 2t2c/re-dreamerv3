@@ -4,6 +4,8 @@ import datetime
 import pathlib
 import sys
 from functools import partial as bind  # alias partial function as bind
+import warnings
+warnings.filterwarnings("ignore")
 
 # set up module path resolution
 folder = pathlib.Path(__file__).parent

@@ -1,12 +1,18 @@
-# [RE] Mastering Diverse Domains through World Models
+# Re-DreamerV3: Enhancing Sample Efficiency with Transformer-Based SSMs and Prioritized Replay
 
-A reimplementation of [DreamerV3][paper], a scalable and general reinforcement
-learning algorithm that masters a wide range of applications with fixed
-hyperparameters.
+[DreamerV3][paper] is a scalable and general reinforcement
+learning algorithm that masters a wide range of applications with fixed hyperparameters.
+
+This repository was initially forked from the open-source implementation provided in the original DreamerV3 paper. 
+
+This work aims to enhance the DreamerV3 framework through two primary modifications: First, a
+unified replay prioritization strategy that stochastically combines PER and CR; Second, the adoption
+of a Transformer-based State Space Model (SSM) to form the world model’s backbone.
+
 
 ![DreamerV3 Tasks](https://user-images.githubusercontent.com/2111293/217647148-cbc522e2-61ad-4553-8e14-1ecdc8d9438b.gif)
 
-If you find this code useful, please reference in your paper:
+You can cite the original codebase as:
 
 ```
 @article{hafner2023dreamerv3,
@@ -19,9 +25,9 @@ If you find this code useful, please reference in your paper:
 
 To learn more:
 
-- [Research paper][paper]
-- [Project website][website]
-- [Twitter summary][tweet]
+- [Research paper](https://arxiv.org/pdf/2301.04104v1)
+- [Project website](https://danijar.com/project/dreamerv3/)
+- [Twitter summary](https://x.com/danijarh/status/1613161946223677441)
 
 ## DreamerV3
 
@@ -57,10 +63,10 @@ follow the manual instructions below.
 
 ## Manual
 
-Install [JAX][jax] and then the other dependencies:
+Install [JAX](https://github.com/jax-ml/jax#pip-installation-gpu-cuda) and then the other dependencies:
 
 ```sh
-pip install -U -r requirements.txt
+conda env create -f environment.yaml
 ```
 
 Training script:
@@ -82,7 +88,53 @@ pip install -U scope
 python -m scope.viewer --basedir ~/logdir --port 8000
 ```
 
+W&B Dashboard:
+
+```sh
+export WANDB_API_KEY=<your_api_key>
+wandb login
+```
+
 Scalar metrics are also writting as JSONL files.
+
+# Running experiments for PER, CR and Transformer-based SSM
+
+This is a sample command which performs an experiment for the combination of PER, CR and Transformer-based SSM. You can find the full config options in `configs.yaml`. There we have specified the default configs for the three environments - `dmc_proprio_walker_run` for Walker Run, `dmc_vision` for Cheetah Run and `atari100k_private_eye` for Private Eye.
+
+```sh
+python dreamerv3/main.py \
+    --run_name dmc_proprio_walker_run \
+    --project combined_rssmv2_replays \
+    --logdir logdir/combined_rssmv2_replays/dmc_proprio_walker_run/1/{timestamp} \
+    --configs dmc_proprio_walker_run \
+    --seed 1 \
+    --replay.fracs.uniform 0.0 \
+    --replay.fracs.priority 0.5 \
+    --replay.fracs.curious 0.5 \
+    --replay.curious.max_aggregation False \
+    --agent.use_transformer True \
+    --agent.dyn.rssm.gating True \
+    --agent.dyn.rssm.adaptive_unimix True \
+    --agent.dec.simple.symlog_log_cosh True
+```
+
+To enable / disable use of Transformer-based SSM, use flag:
+```
+--agent.use_transformer True
+```
+To control the ratio between fraction of samples from different prioritization strategies, use flags:
+```
+--replay.fracs.uniform 0.0
+--replay.fracs.priority 0.5
+--replay.fracs.curious 0.5
+```
+
+## Plotting the results
+We have a script which plots results from multiple runs. You can specify which methods to plot and where to save the result. To explore the runs, check out the `/logdir` directory.
+
+```sh
+python scripts/plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays" --filename combined_results.png
+```
 
 # Tips
 
@@ -110,12 +162,7 @@ Scalar metrics are also writting as JSONL files.
 
 # Disclaimer
 
-This repository contains a reimplementation of DreamerV3 based on the open
-source DreamerV2 code base. It is unrelated to Google or DeepMind. The
+This repository fork contains a reimplementation of DreamerV3 based on the open
+source orignal DreamerV3 code base. It is unrelated to Google or DeepMind. The
 implementation has been tested to reproduce the official results on a range of
 environments.
-
-[jax]: https://github.com/google/jax#pip-installation-gpu-cuda
-[paper]: https://arxiv.org/pdf/2301.04104v1.pdf
-[website]: https://danijar.com/dreamerv3
-[tweet]: https://twitter.com/danijarh/status/1613161946223677441
