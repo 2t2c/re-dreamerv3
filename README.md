@@ -25,9 +25,9 @@ You can cite the original codebase as:
 
 To learn more:
 
-- [Research paper][paper]
-- [Project website][website]
-- [Twitter summary][tweet]
+- [Research paper](https://arxiv.org/pdf/2301.04104v1)
+- [Project website](https://danijar.com/project/dreamerv3/)
+- [Twitter summary](https://x.com/danijarh/status/1613161946223677441)
 
 ## DreamerV3
 
@@ -63,7 +63,7 @@ follow the manual instructions below.
 
 ## Manual
 
-Install [JAX][jax] and then the other dependencies:
+Install [JAX](https://github.com/jax-ml/jax#pip-installation-gpu-cuda) and then the other dependencies:
 
 ```sh
 conda env create -f environment.yaml

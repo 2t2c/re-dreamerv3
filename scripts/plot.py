@@ -452,6 +452,7 @@ if __name__ == '__main__':
         outdir='../logdir/',
         methods='dreamer|reproducibility',
         # methods='dreamer|rssmv2|reproducibility',
+        # methods='dreamer|rssmv2|reproducibility|combined_rssmv2_replays',
         max_seeds=10,
         tasks='',
         newstyle=False,
