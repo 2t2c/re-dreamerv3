@@ -66,7 +66,7 @@ follow the manual instructions below.
 Install [JAX][jax] and then the other dependencies:
 
 ```sh
-pip install -U -r requirements.txt
+conda env create -f environment.yaml
 ```
 
 Training script:
@@ -86,6 +86,13 @@ View results:
 ```sh
 pip install -U scope
 python -m scope.viewer --basedir ~/logdir --port 8000
+```
+
+W&B Dashboard:
+
+```sh
+export WANDB_API_KEY=<your_api_key>
+wandb login
 ```
 
 Scalar metrics are also writting as JSONL files.
@@ -126,7 +133,7 @@ To control the ratio between fraction of samples from different prioritization s
 We have a script which plots results from multiple runs. You can specify which methods to plot and where to save the result. To explore the runs, check out the `/logdir` directory.
 
 ```sh
-python plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays" --filename combined_results.png
+python scripts/plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays" --filename combined_results.png
 ```
 
 # Tips
@@ -155,12 +162,7 @@ python plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays
 
 # Disclaimer
 
-This repository contains a reimplementation of DreamerV3 based on the open
-source DreamerV2 code base. It is unrelated to Google or DeepMind. The
+This repository fork contains a reimplementation of DreamerV3 based on the open
+source orignal DreamerV3 code base. It is unrelated to Google or DeepMind. The
 implementation has been tested to reproduce the official results on a range of
 environments.
-
-[jax]: https://github.com/google/jax#pip-installation-gpu-cuda
-[paper]: https://arxiv.org/pdf/2301.04104v1.pdf
-[website]: https://danijar.com/dreamerv3
-[tweet]: https://twitter.com/danijarh/status/1613161946223677441

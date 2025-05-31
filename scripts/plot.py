@@ -225,7 +225,7 @@ def plot_runs(df, stats, args):
     fig, axes = plots(total, cols, args.size)
 
     grouped = df.groupby(['task', 'method'])[['xs', 'ys', 'seed']].agg(np.stack)
-    for task, ax in zip(tasks, axes[:len(tasks)]):
+    for idx, (task, ax) in enumerate(zip(tasks, axes[:len(tasks)])):
         style(ax, xticks=args.xticks, yticks=args.yticks)
         title = task.replace('_', ' ').replace(':', ' ').split(' ', 1)[1].title()
         ax.set_title(title)
@@ -238,6 +238,8 @@ def plot_runs(df, stats, args):
         args.xlim and ax.set_xlim(0, 1.03 * args.xlim)
         task in plot_xlim_override and ax.set_xlim(0, 1.01 * plot_xlim_override[task])
         args.ylim and ax.set_ylim(0, 1.03 * args.ylim)
+        if idx == 0:
+            ax.set_ylabel('Return')
         for i, method in enumerate(methods):
             try:
                 sub = grouped.loc[task, method]
@@ -413,13 +415,13 @@ def main(args):
     df['int_seed'] = df['seed'].str.split("_").str[-1].astype(int)
 
     # only consider the best 2 seeds (manually from wandb)
-    method = "rssmv2"
-    exclude_conditions = (
-            ((df['task'] == 'atari100k_private_eye') & (df['int_seed'].isin([3]))) |
-            ((df['task'] == 'dmc_cheetah_run') & (df['int_seed'].isin([2]))) |
-            ((df['task'] == 'dmc_walker_run') & (df['int_seed'].isin([1])))
-    )
-    df = df[~((df['method'] == method) & exclude_conditions)]
+    # method = "rssmv2"
+    # exclude_conditions = (
+    #         ((df['task'] == 'atari100k_private_eye') & (df['int_seed'].isin([3]))) |
+    #         ((df['task'] == 'dmc_cheetah_run') & (df['int_seed'].isin([2]))) |
+    #         ((df['task'] == 'dmc_walker_run') & (df['int_seed'].isin([1])))
+    # )
+    # df = df[~((df['method'] == method) & exclude_conditions)]
 
     # df = df.groupby(['task', 'method']).apply(lambda g: g.nlargest(args.max_seeds, 'int_seed')).reset_index(drop=True)
 
@@ -448,8 +450,8 @@ if __name__ == '__main__':
         indirs=['../logdir/re-dreamerv3',
                 '../logdir/original'],
         outdir='../logdir/',
-        # methods='dreamer|reproducibility',
-        methods='dreamer|rssmv2|reproducibility|combined_rssmv2_replays',
+        methods='dreamer|reproducibility',
+        # methods='dreamer|rssmv2|reproducibility',
         max_seeds=10,
         tasks='',
         newstyle=False,
