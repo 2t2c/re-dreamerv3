@@ -201,6 +201,19 @@ dmc_proprio:
   agent.dyn.rssm.gating: True 
   run: {envs: 16, steps: 2.5e5, train_ratio: 512}
 
+dmc_walker_run:
+  <<: *size12m
+  task: dmc_walker_run
+  env:
+    dmc:
+      image: False
+      proprio: True
+      repeat: 2
+  run:
+    steps: 2.51e5
+    train_ratio: 512
+    envs: 16
+
 dmc_vision:
   # Configuration as per DreamerV3 Table 2.
   <<: *size12m # 12M param model.
