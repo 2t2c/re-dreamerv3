@@ -1,5 +1,4 @@
-# Re-DreamerV3: Enhancing Sample Efficiency with
-Transformer-Based SSMs and Prioritized Replay
+# Re-DreamerV3: Enhancing Sample Efficiency with Transformer-Based SSMs and Prioritized Replay
 
 [DreamerV3][paper] is a scalable and general reinforcement
 learning algorithm that masters a wide range of applications with fixed hyperparameters.
