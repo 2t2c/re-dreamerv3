@@ -1,12 +1,19 @@
-# [RE] Mastering Diverse Domains through World Models
+# Re-DreamerV3: Enhancing Sample Efficiency with
+Transformer-Based SSMs and Prioritized Replay
 
-A reimplementation of [DreamerV3][paper], a scalable and general reinforcement
-learning algorithm that masters a wide range of applications with fixed
-hyperparameters.
+[DreamerV3][paper] is a scalable and general reinforcement
+learning algorithm that masters a wide range of applications with fixed hyperparameters.
+
+This repository was initially forked from the open-source implementation provided in the original DreamerV3 paper. 
+
+This work aims to enhance the DreamerV3 framework through two primary modifications: First, a
+unified replay prioritization strategy that stochastically combines PER and CR; Second, the adoption
+of a Transformer-based State Space Model (SSM) to form the world model’s backbone.
+
 
 ![DreamerV3 Tasks](https://user-images.githubusercontent.com/2111293/217647148-cbc522e2-61ad-4553-8e14-1ecdc8d9438b.gif)
 
-If you find this code useful, please reference in your paper:
+You can cite the original codebase as:
 
 ```
 @article{hafner2023dreamerv3,
