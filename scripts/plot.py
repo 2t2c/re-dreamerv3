@@ -78,6 +78,14 @@ def load_runs(args):
             #   method += f'\n(seeds={5})'
             # else:
             #   method += f'\n(seeds={TOTAL_SEEDS})'
+            if method == "curious_replay":
+                method = "CR"
+            elif method == "prioritized_experience_replay":
+                method = "PER"
+            elif method == "per_plus_cr":
+                method = "PER+CR" 
+            elif method == "combined_rssmv2_replays":
+                method = "rssmv2+PER+CR"
             method = f'{indir.name}_{method}' if args.indir_prefix else method
             records.append(dict(task=task, method=method, seed=seed))
             filenames.append(filename)
@@ -450,7 +458,8 @@ if __name__ == '__main__':
         indirs=['../logdir/re-dreamerv3',
                 '../logdir/original'],
         outdir='../logdir/',
-        methods='dreamer|reproducibility',
+        methods='dreamer|reproducibility|curious_replay|prioritized_experience_replay|per_plus_cr|combined_rssmv2_replays',
+        # methods='dreamer|reproducibility',
         # methods='dreamer|rssmv2|reproducibility',
         # methods='dreamer|rssmv2|reproducibility|combined_rssmv2_replays',
         max_seeds=10,
@@ -473,7 +482,7 @@ if __name__ == '__main__':
         stats=['none'],
         agg=True,
         todf='',
-        filename='curves.png',
+        filename='curves_replay.png',
     )
 
     if len(sys.argv) <= 1:
