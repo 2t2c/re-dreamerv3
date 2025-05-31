@@ -117,7 +117,7 @@ To control the ratio between fraction of samples from different prioritization s
 ```
 
 ## Plotting the results
-We have a script which plots results from multiple runs. You can specify which methods to plot and where to save the result. To explore the runs, check out the /logdir directory.
+We have a script which plots results from multiple runs. You can specify which methods to plot and where to save the result. To explore the runs, check out the `/logdir` directory.
 
 ```sh
 python plot.py --methods "dreamer|rssmv2|reproducibility|combined_rssmv2_replays" --filename combined_results.png
